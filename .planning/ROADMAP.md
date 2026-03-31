@@ -22,46 +22,53 @@ Plans:
 - [x] Establish package structure: `screen/`, `game/`, `network/`, `ui/`.
 
 ### 1.2 Typed Navigation
-- [ ] Define typed routes (Kotlin Serializable) for all screens: `Splash`, `MainMenu`, `Lobby`, `Game`.
-- [ ] Implement `NavHost` in `MainActivity`.
-- [ ] Auto-advance `SplashScreen` to `MainMenu` after delay.
+- [x] Define typed routes (Kotlin Serializable) for all screens: `Splash`, `MainMenu`, `Lobby`, `Game`.
+- [x] Implement `NavHost` in `MainActivity`.
+- [x] Auto-advance `SplashScreen` to `MainMenu` after delay.
 
 ### 1.3 Main Menu
-- [ ] Build `MainMenuScreen` with buttons for VS CPU, VS HUMAN (Local), VS LAN (Lobby).
-- [ ] Implement basic state-driven UI for navigation callbacks.
+- [x] Build `MainMenuScreen` with buttons for VS CPU, VS HUMAN (Local), VS LAN (Lobby).
+- [x] Implement basic state-driven UI for navigation callbacks.
 
 ---
 
 ## Phase 2: Core Game Logic (The Engine)
 **Prerequisite:** None (Pure Kotlin logic).
 **Goal:** Fully testable, pure-Kotlin game state machine.
-**Plans:** 2 plans
+**Plans:** 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Define models and core GameEngine logic.
-- [ ] 02-02-PLAN.md — Implement Easy, Medium, and Hard (Minimax) CPU AI.
+- [x] 02-00-PLAN.md — Create core engine and AI test stubs.
+- [x] 02-01-PLAN.md — Define models and core GameEngine logic.
+- [x] 02-02-PLAN.md — Implement Easy, Medium, and Hard (Minimax) CPU AI.
 
 ### 2.1 State Models
-- [ ] Define `GameState`, `Player`, `CellState`, `GamePhase`, `GameMode` data classes/enums.
-- [ ] Ensure `GameState` is immutable and replaces entire board on move.
+- [x] Define `GameState`, `Player`, `CellState`, `GamePhase`, `GameMode` data classes/enums.
+- [x] Ensure `GameState` is immutable and replaces entire board on move.
 
 ### 2.2 Game Engine
-- [ ] Implement move validation (index bounds, empty cell check).
-- [ ] Implement win detection (8 possible lines).
-- [ ] Implement draw detection (all cells filled, no winner).
-- [ ] **Validation:** 100% unit test coverage for engine logic.
+- [x] Implement move validation (index bounds, empty cell check).
+- [x] Implement win detection (8 possible lines).
+- [x] Implement draw detection (all cells filled, no winner).
+- [x] **Validation:** 100% unit test coverage for engine logic.
 
 ### 2.3 CPU AI (Minimax)
-- [ ] Implement `Easy` strategy (random).
-- [ ] Implement `Medium` strategy (heuristic: block win, take win, else random).
-- [ ] Implement `Hard` strategy (unbeatable minimax algorithm).
-- [ ] **Validation:** Unit tests for AI scenarios (forced win, forced block).
+- [x] Implement `Easy` strategy (random).
+- [x] Implement `Medium` strategy (heuristic: block win, take win, else random).
+- [x] Implement `Hard` strategy (unbeatable minimax algorithm).
+- [x] **Validation:** Unit tests for AI scenarios (forced win, forced block).
 
 ---
 
 ## Phase 3: Game UI & Interaction
 **Prerequisite:** Phase 1 (Navigation) & Phase 2 (Logic).
-**Goal:** Functional single-device gameplay.
+**Goal:** Functional single-device gameplay with local and CPU modes.
+**Plans:** 3 plans
+
+Plans:
+- [ ] 03-00-PLAN.md — Infrastructure & Test Stubs.
+- [ ] 03-01-PLAN.md — Game ViewModel (UDF, AI Turn Delay).
+- [ ] 03-02-PLAN.md — Game Board UI & Result Overlay (Compose).
 
 ### 3.1 Game ViewModel
 - [ ] Implement `GameViewModel` with `MutableStateFlow<GameState>`.
