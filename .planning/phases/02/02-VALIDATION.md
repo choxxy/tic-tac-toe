@@ -2,8 +2,8 @@
 phase: 02
 slug: core-game-logic
 status: draft
-nyquist_compliant: false
-wave_0_complete: false
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-03-31
 ---
 
@@ -38,12 +38,12 @@ created: 2026-03-31
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 02-01-01 | 01 | 1 | CORE-01 | unit | `./gradlew test --tests "*GameStateTest*"` | ❌ W0 | ⬜ pending |
-| 02-01-02 | 01 | 1 | CORE-02 | unit | `./gradlew test --tests "*GameEngineTest*"` | ❌ W0 | ⬜ pending |
-| 02-01-03 | 01 | 1 | CORE-03 | unit | `./gradlew test --tests "*GameEngineTest*"` | ❌ W0 | ⬜ pending |
-| 02-02-01 | 02 | 2 | AI-01 | unit | `./gradlew test --tests "*CpuPlayerTest*"` | ❌ W0 | ⬜ pending |
-| 02-02-02 | 02 | 2 | AI-02 | unit | `./gradlew test --tests "*CpuPlayerTest*"` | ❌ W0 | ⬜ pending |
-| 02-02-03 | 02 | 2 | AI-03 | unit | `./gradlew test --tests "*CpuPlayerTest*"` | ❌ W0 | ⬜ pending |
+| 02-00-01 | 00 | 0 | 2.1, 2.2 | unit | `ls app/src/test/java/com/jna/tictactoe/game/GameEngineTest.kt` | ✅ | ⬜ pending |
+| 02-00-02 | 00 | 0 | 2.3 | unit | `ls app/src/test/java/com/jna/tictactoe/game/CpuPlayerTest.kt` | ✅ | ⬜ pending |
+| 02-01-01 | 01 | 1 | 2.1 | unit | `./gradlew test --tests "*GameStateTest*"` | ✅ | ⬜ pending |
+| 02-01-02 | 01 | 1 | 2.2 | unit | `./gradlew test --tests "*GameEngineTest*"` | ✅ | ⬜ pending |
+| 02-02-01 | 02 | 2 | 2.3 | unit | `./gradlew test --tests "*CpuPlayerTest*"` | ✅ | ⬜ pending |
+| 02-02-02 | 02 | 2 | 2.3 | unit | `./gradlew test --tests "*CpuPlayerTest*"` | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -51,11 +51,9 @@ created: 2026-03-31
 
 ## Wave 0 Requirements
 
-- [ ] `app/src/test/java/com/jna/tictactoe/game/GameEngineTest.kt` — stubs for CORE-02, CORE-03
-- [ ] `app/src/test/java/com/jna/tictactoe/game/GameStateTest.kt` — stubs for CORE-01
-- [ ] `app/src/test/java/com/jna/tictactoe/game/CpuPlayerTest.kt` — stubs for AI-01, AI-02, AI-03
-
-*If none: "Existing infrastructure covers all phase requirements."*
+- [x] `app/src/test/java/com/jna/tictactoe/game/GameEngineTest.kt` — stubs for 2.2
+- [x] `app/src/test/java/com/jna/tictactoe/game/GameStateTest.kt` — stubs for 2.1
+- [x] `app/src/test/java/com/jna/tictactoe/game/CpuPlayerTest.kt` — stubs for 2.3
 
 ---
 
@@ -71,11 +69,11 @@ created: 2026-03-31
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 60s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 60s
+- [x] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending

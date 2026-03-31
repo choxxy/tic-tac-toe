@@ -1,3 +1,4 @@
+
 # Phase 02: Core Game Logic - Research
 
 **Researched:** 2026-03-30
@@ -150,10 +151,9 @@ fun minimax(board: List<CellState>, player: Player, depth: Int): Int {
 ### Phase Requirements → Test Map
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |--------|----------|-----------|-------------------|-------------|
-| REQ-01 | Win detection (8 lines) | unit | `./gradlew test -Ptest.filter=*GameEngineTest*` | ❌ Wave 0 |
-| REQ-02 | Draw detection | unit | `./gradlew test -Ptest.filter=*GameEngineTest*` | ❌ Wave 0 |
-| REQ-03 | Move validation | unit | `./gradlew test -Ptest.filter=*GameEngineTest*` | ❌ Wave 0 |
-| REQ-04 | Hard AI (Unbeatable) | unit | `./gradlew test -Ptest.filter=*CpuPlayerTest*` | ❌ Wave 0 |
+| 2.1 | State Models (Immutable) | unit | `./gradlew test -Ptest.filter=*GameStateTest*` | ❌ Wave 0 |
+| 2.2 | Game Engine (Win/Draw/Validation) | unit | `./gradlew test -Ptest.filter=*GameEngineTest*` | ❌ Wave 0 |
+| 2.3 | CPU AI (Easy/Medium/Hard) | unit | `./gradlew test -Ptest.filter=*CpuPlayerTest*` | ❌ Wave 0 |
 
 ### Sampling Rate
 - **Per task commit:** `./gradlew testDebugUnitTest --tests "com.jna.tictactoe.game.*"`
