@@ -118,6 +118,12 @@ Plans:
 ## Phase 5: Polish & Aesthetics
 **Prerequisite:** Phase 4 (Functional Networking).
 **Goal:** Transform functional game into a premium experience.
+**Plans:** 3 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Audio & Haptics (SoundManager, SoundPool).
+- [ ] 05-02-PLAN.md — Game Board Animations (Win Line, Refined Pieces).
+- [ ] 05-03-PLAN.md — UI Polish (Result dialog, Confetti, About screen, Dark Mode audit).
 
 ### 5.1 Animations
 - [ ] Piece placement animation (Scale + Fade-in).
