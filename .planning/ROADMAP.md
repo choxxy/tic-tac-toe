@@ -90,6 +90,13 @@ Plans:
 ## Phase 4: LAN Multiplayer
 **Prerequisite:** Phase 3 (Working Local Game).
 **Goal:** Low-friction peer-to-peer networking.
+**Plans:** 4 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Networking Infrastructure (NSD & Sockets).
+- [ ] 04-02-PLAN.md — LAN Lobby & Handshake UI.
+- [ ] 04-03-PLAN.md — LAN Game Integration & Move Sync.
+- [ ] 04-04-PLAN.md — Disconnect Recovery & Resiliency.
 
 ### 4.1 Networking Infrastructure
 - [ ] Build `NsdDiscoveryManager` wrapping `NsdManager` callbacks in `callbackFlow`.
