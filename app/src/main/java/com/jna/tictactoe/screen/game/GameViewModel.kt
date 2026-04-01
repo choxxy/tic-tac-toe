@@ -4,16 +4,21 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.jna.tictactoe.audio.SoundManager
 import com.jna.tictactoe.game.CpuPlayer
 import com.jna.tictactoe.game.GameEngine
 import com.jna.tictactoe.game.model.*
 import com.jna.tictactoe.navigation.Game
-import kotlinx.coroutines.delay
+import com.jna.tictactoe.network.model.GameMessage
+import com.jna.tictactoe.network.socket.GameSocketManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 import kotlin.random.Random
 
 /**
@@ -21,25 +26,154 @@ import kotlin.random.Random
  * Implements UDF patterns to manage the Tic-Tac-Toe game state,
  * session scores, and AI opponent logic.
  */
-class GameViewModel(
-    savedStateHandle: SavedStateHandle? = null
+@HiltViewModel
+class GameViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
+    private val socketManager: GameSocketManager,
+    private val soundManager: SoundManager
 ) : ViewModel() {
 
     // Retrieve navigation arguments (GameMode and Difficulty)
     private var args: Game = try {
-        savedStateHandle?.toRoute<Game>() ?: Game(mode = GameMode.VS_HUMAN_LOCAL)
+        savedStateHandle.toRoute<Game>()
     } catch (e: Exception) {
         // Fallback for tests or unexpected navigation state
-        val modeStr = savedStateHandle?.get<String>("mode")
-        val diffStr = savedStateHandle?.get<String>("difficulty")
+        val modeStr = savedStateHandle.get<String>("mode")
+        val diffStr = savedStateHandle.get<String>("difficulty")
+        val isHost = savedStateHandle.get<Boolean>("isHost") ?: true
+        val peerName = savedStateHandle.get<String>("peerName")
         Game(
             mode = modeStr?.let { GameMode.valueOf(it) } ?: GameMode.VS_CPU,
-            difficulty = diffStr?.let { Difficulty.valueOf(it) }
+            difficulty = diffStr?.let { Difficulty.valueOf(it) },
+            isHost = isHost,
+            peerName = peerName
         )
     }
 
-    private val _uiState = MutableStateFlow(GameUiState())
+    private val _uiState = MutableStateFlow(
+        GameUiState(
+            isHost = args.isHost,
+            peerName = args.peerName
+        )
+    )
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
+
+    private var lastMessageReceivedTime = System.currentTimeMillis()
+    private var heartbeatJob: Job? = null
+    private var reconnectionJob: Job? = null
+
+    init {
+        soundManager.loadSounds()
+        if (args.mode == GameMode.VS_LAN) {
+            observeNetworkMessages()
+            startHeartbeat()
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        soundManager.release()
+    }
+
+    /**
+     * Sends a heartbeat every 2 seconds and detects disconnects.
+     */
+    private fun startHeartbeat() {
+        heartbeatJob?.cancel()
+        heartbeatJob = viewModelScope.launch {
+            while (isActive) {
+                delay(2000)
+                try {
+                    socketManager.send(GameMessage.Heartbeat)
+                } catch (e: Exception) {
+                    handleDisconnect()
+                    break
+                }
+
+                if (System.currentTimeMillis() - lastMessageReceivedTime > 5000) {
+                    handleDisconnect()
+                    break
+                }
+            }
+        }
+    }
+
+    private fun handleDisconnect() {
+        if (_uiState.value.isReconnecting) return
+        
+        _uiState.update { it.copy(isReconnecting = true, reconnectCountdown = 9) }
+        startReconnectionProcess()
+    }
+
+    private fun startReconnectionProcess() {
+        reconnectionJob?.cancel()
+        reconnectionJob = viewModelScope.launch {
+            var countdown = 9
+            while (countdown > 0) {
+                // Try to reconnect
+                try {
+                    if (args.isHost) {
+                        // Host: just wait for a connection
+                        viewModelScope.launch {
+                            try {
+                                socketManager.host { }
+                                onReconnected()
+                            } catch (e: Exception) { }
+                        }
+                    } else {
+                        // Guest: try to connect to last host
+                        val host = socketManager.lastHost
+                        val port = socketManager.lastPort
+                        if (host != null && port != null) {
+                            socketManager.connect(host, port)
+                            onReconnected()
+                            break
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Reconnection failed, wait and try again
+                }
+                
+                delay(1000)
+                if (!_uiState.value.isReconnecting) break
+                countdown--
+                _uiState.update { it.copy(reconnectCountdown = countdown) }
+            }
+            
+            if (countdown == 0 && _uiState.value.isReconnecting) {
+                // Timeout
+                _uiState.update { it.copy(reconnectCountdown = 0) }
+            }
+        }
+    }
+
+    private fun onReconnected() {
+        _uiState.update { it.copy(isReconnecting = false, reconnectCountdown = null) }
+        lastMessageReceivedTime = System.currentTimeMillis()
+        startHeartbeat()
+        // If host, broadcast current state to sync the reconnected guest
+        if (args.isHost) {
+            broadcastState()
+        }
+    }
+
+    fun switchToCpuMode() {
+        reconnectionJob?.cancel()
+        heartbeatJob?.cancel()
+        _uiState.update { 
+            it.copy(
+                isReconnecting = false, 
+                reconnectCountdown = null,
+                gameState = it.gameState.copy(mode = GameMode.VS_CPU),
+                peerName = "CPU (Easy)"
+            ) 
+        }
+        args = args.copy(mode = GameMode.VS_CPU, difficulty = Difficulty.EASY)
+        
+        if (_uiState.value.gameState.currentTurn == Player.O) {
+            triggerAiMove()
+        }
+    }
 
     /**
      * Initializes a new game with the given mode and difficulty.
@@ -65,7 +199,25 @@ class GameViewModel(
             return
         }
 
-        applyMove(index)
+        if (args.mode == GameMode.VS_LAN) {
+            // In LAN mode, check if it's actually our turn
+            if (currentState.isWaitingForPeerMove) return
+
+            if (args.isHost) {
+                // Host: apply locally and sync
+                soundManager.playPlacePiece()
+                applyMove(index)
+            } else {
+                // Guest: send move request to host
+                viewModelScope.launch {
+                    socketManager.send(GameMessage.Move(index))
+                }
+            }
+        } else {
+            // Local or CPU mode: apply move directly
+            soundManager.playPlacePiece()
+            applyMove(index)
+        }
     }
 
     /**
@@ -79,8 +231,12 @@ class GameViewModel(
             )
         }
         
+        // If Host in LAN mode, sync the reset state
+        if (args.mode == GameMode.VS_LAN && args.isHost) {
+            broadcastState()
+        }
+
         // If it's VS_CPU and it's O's turn (CPU), trigger AI move
-        // This handles cases where the first player is O (not applicable currently but good practice)
         if (args.mode == GameMode.VS_CPU && 
             _uiState.value.gameState.currentTurn == Player.O) {
             triggerAiMove()
@@ -93,6 +249,10 @@ class GameViewModel(
     private fun applyMove(index: Int) {
         val newState = GameEngine.applyMove(_uiState.value.gameState, index)
         updateStateAfterMove(newState)
+
+        if (args.mode == GameMode.VS_LAN && args.isHost) {
+            broadcastState()
+        }
 
         // If it's VS_CPU mode and now it's CPU's turn, trigger AI
         if (args.mode == GameMode.VS_CPU && 
@@ -111,12 +271,16 @@ class GameViewModel(
             var updatedOWins = currentState.oWins
             var updatedDraws = currentState.draws
 
-            if (newGameState.phase == GamePhase.WIN) {
-                // If it's WIN, currentTurn is the winner in GameEngine.applyMove
-                if (newGameState.currentTurn == Player.X) updatedXWins++
-                else if (newGameState.currentTurn == Player.O) updatedOWins++
-            } else if (newGameState.phase == GamePhase.DRAW) {
-                updatedDraws++
+            if (newGameState.phase != currentState.gameState.phase) {
+                if (newGameState.phase == GamePhase.WIN) {
+                    // If it's WIN, currentTurn is the winner in GameEngine.applyMove
+                    soundManager.playWin()
+                    if (newGameState.currentTurn == Player.X) updatedXWins++
+                    else if (newGameState.currentTurn == Player.O) updatedOWins++
+                } else if (newGameState.phase == GamePhase.DRAW) {
+                    soundManager.playDraw()
+                    updatedDraws++
+                }
             }
 
             currentState.copy(
@@ -125,6 +289,50 @@ class GameViewModel(
                 oWins = updatedOWins,
                 draws = updatedDraws
             )
+        }
+    }
+
+    /**
+     * Observes incoming messages from the network socket.
+     */
+    private fun observeNetworkMessages() {
+        viewModelScope.launch {
+            socketManager.incomingMessages.collect { message ->
+                lastMessageReceivedTime = System.currentTimeMillis()
+                when (message) {
+                    is GameMessage.Move -> {
+                        if (args.isHost) {
+                            // Host: validate and apply guest move
+                            if (GameEngine.isValidMove(_uiState.value.gameState, message.index) && 
+                                _uiState.value.gameState.currentTurn == Player.O) {
+                                soundManager.playPlacePiece()
+                                applyMove(message.index)
+                            }
+                        }
+                    }
+                    is GameMessage.SyncState -> {
+                        if (!args.isHost) {
+                            // Guest: replace local state with authoritative host state
+                            val currentPhase = _uiState.value.gameState.phase
+                            val newPhase = message.state.phase
+                            if (newPhase == GamePhase.PLAYING && currentPhase == GamePhase.PLAYING) {
+                                soundManager.playPlacePiece()
+                            }
+                            updateStateAfterMove(message.state)
+                        }
+                    }
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    /**
+     * Broadcasts the current game state to the peer.
+     */
+    private fun broadcastState() {
+        viewModelScope.launch {
+            socketManager.send(GameMessage.SyncState(_uiState.value.gameState))
         }
     }
 
@@ -140,6 +348,7 @@ class GameViewModel(
             
             val move = CpuPlayer.getMove(_uiState.value.gameState, args.difficulty ?: Difficulty.MEDIUM)
             if (move != null) {
+                soundManager.playPlacePiece()
                 val newState = GameEngine.applyMove(_uiState.value.gameState, move)
                 updateStateAfterMove(newState)
             }

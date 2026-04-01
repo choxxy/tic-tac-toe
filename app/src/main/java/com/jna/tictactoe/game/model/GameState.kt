@@ -1,5 +1,7 @@
 package com.jna.tictactoe.game.model
 
+import kotlinx.serialization.Serializable
+
 /**
  * Represents the complete state of a Tic-Tac-Toe game at any given moment.
  * 
@@ -9,6 +11,7 @@ package com.jna.tictactoe.game.model
  * @property mode The selected [GameMode] (VS CPU, Local, etc.).
  * @property winLine The list of board indices forming the winning combination, or null if no winner.
  */
+@Serializable
 data class GameState(
     val board: List<CellState> = List(9) { CellState.EMPTY },
     val currentTurn: Player = Player.X,

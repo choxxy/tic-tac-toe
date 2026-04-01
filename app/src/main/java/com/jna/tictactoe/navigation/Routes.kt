@@ -25,11 +25,22 @@ object Lobby
 /**
  * Route for the Game screen.
  *
- * @param mode The selected game mode (e.g., VS_CPU, VS_HUMAN_LOCAL).
+ * @param mode The selected game mode (e.g., VS_CPU, VS_HUMAN_LOCAL, VS_LAN).
  * @param difficulty The selected difficulty level (optional, used for CPU mode).
+ * @param isHost True if this device is the host in LAN mode.
+ * @param peerName The name of the opponent in LAN mode.
  */
 @Serializable
 data class Game(
     val mode: GameMode,
-    val difficulty: Difficulty? = null
+    val difficulty: Difficulty? = null,
+    val isHost: Boolean = true,
+    val peerName: String? = null
 )
+
+/**
+ * Route for the About screen.
+ */
+@Serializable
+object About
+

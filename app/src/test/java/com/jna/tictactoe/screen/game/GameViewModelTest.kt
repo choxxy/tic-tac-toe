@@ -1,7 +1,9 @@
 package com.jna.tictactoe.screen.game
 
 import androidx.lifecycle.SavedStateHandle
+import com.jna.tictactoe.audio.SoundManager
 import com.jna.tictactoe.game.model.*
+import com.jna.tictactoe.network.socket.GameSocketManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
@@ -9,6 +11,9 @@ import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mock
+import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
 
 /**
  * Unit test for [GameViewModel].
@@ -19,14 +24,29 @@ class GameViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
 
+    @Mock
+    private lateinit var soundManager: SoundManager
+
+    @Mock
+    private lateinit var socketManager: GameSocketManager
+
     @Before
     fun setup() {
+        MockitoAnnotations.openMocks(this)
         Dispatchers.setMain(testDispatcher)
     }
 
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+    }
+
+    private fun createViewModel(savedStateHandle: SavedStateHandle): GameViewModel {
+        return GameViewModel(
+            savedStateHandle = savedStateHandle,
+            socketManager = socketManager,
+            soundManager = soundManager
+        )
     }
 
     /**
@@ -38,7 +58,7 @@ class GameViewModelTest {
         val savedStateHandle = createSavedStateHandle(GameMode.VS_CPU, Difficulty.HARD)
         
         // When
-        val viewModel = GameViewModel(savedStateHandle)
+        val viewModel = createViewModel(savedStateHandle)
 
         // Then
         val state = viewModel.uiState.value
@@ -56,7 +76,7 @@ class GameViewModelTest {
     fun `onCellClicked updates board and switches turn in local mode`() = runTest {
         // Given
         val savedStateHandle = createSavedStateHandle(GameMode.VS_HUMAN_LOCAL)
-        val viewModel = GameViewModel(savedStateHandle)
+        val viewModel = createViewModel(savedStateHandle)
 
         // When - Player X clicks center cell (index 4)
         viewModel.onCellClicked(4)
@@ -74,7 +94,7 @@ class GameViewModelTest {
     fun `AI makes a move after player move in VS_CPU mode`() = runTest {
         // Given
         val savedStateHandle = createSavedStateHandle(GameMode.VS_CPU, Difficulty.EASY)
-        val viewModel = GameViewModel(savedStateHandle)
+        val viewModel = createViewModel(savedStateHandle)
 
         // When - Player X clicks center cell (index 4)
         viewModel.onCellClicked(4)
@@ -104,7 +124,7 @@ class GameViewModelTest {
     fun `winning move increments score and sets phase to WIN`() = runTest {
         // Given - VS_HUMAN_LOCAL for predictable moves
         val savedStateHandle = createSavedStateHandle(GameMode.VS_HUMAN_LOCAL)
-        val viewModel = GameViewModel(savedStateHandle)
+        val viewModel = createViewModel(savedStateHandle)
 
         // X: 0, 1, 2 (Win)
         // O: 3, 4
@@ -128,7 +148,7 @@ class GameViewModelTest {
     fun `draw increments draw count and sets phase to DRAW`() = runTest {
         // Given - VS_HUMAN_LOCAL
         val savedStateHandle = createSavedStateHandle(GameMode.VS_HUMAN_LOCAL)
-        val viewModel = GameViewModel(savedStateHandle)
+        val viewModel = createViewModel(savedStateHandle)
 
         // X O X
         // X X O
@@ -149,7 +169,7 @@ class GameViewModelTest {
     fun `resetGame clears board but preserves score`() = runTest {
         // Given
         val savedStateHandle = createSavedStateHandle(GameMode.VS_HUMAN_LOCAL)
-        val viewModel = GameViewModel(savedStateHandle)
+        val viewModel = createViewModel(savedStateHandle)
 
         // Winning game for X
         viewModel.onCellClicked(0) // X

@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
@@ -51,12 +52,14 @@ import com.jna.tictactoe.ui.theme.ZenithSurfaceContainerLowest
  * @param onVsCpu Callback when "Play vs CPU" is selected.
  * @param onVsLocal Callback when "Local" (Pass and Play) is selected.
  * @param onVsLan Callback when "Wi-Fi / LAN" is selected.
+ * @param onAbout Callback when "About" is selected.
  */
 @Composable
 fun MainMenuScreen(
     onVsCpu: () -> Unit,
     onVsLocal: () -> Unit,
-    onVsLan: () -> Unit
+    onVsLan: () -> Unit,
+    onAbout: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -69,7 +72,7 @@ fun MainMenuScreen(
                 .padding(horizontal = 24.dp)
         ) {
             // Top Navigation Bar
-            TopNavigationBar()
+            TopNavigationBar(onAbout = onAbout)
 
             Spacer(modifier = Modifier.height(56.dp))
 
@@ -144,7 +147,7 @@ fun MainMenuScreen(
  * Displays the top app bar with app title and navigation actions.
  */
 @Composable
-private fun TopNavigationBar() {
+private fun TopNavigationBar(onAbout: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -172,12 +175,12 @@ private fun TopNavigationBar() {
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
-                imageVector = Icons.Default.Refresh,
-                contentDescription = "History",
+                imageVector = Icons.Default.Info,
+                contentDescription = "About",
                 tint = ZenithOnBackground,
                 modifier = Modifier
                     .size(28.dp)
-                    .clickable { }
+                    .clickable(onClick = onAbout)
             )
             Spacer(modifier = Modifier.width(20.dp))
             Icon(
@@ -428,6 +431,6 @@ private fun ProfileCard(
 @Composable
 fun MainMenuScreenPreview() {
     TictactoeTheme {
-        MainMenuScreen(onVsCpu = {}, onVsLocal = {}, onVsLan = {})
+        MainMenuScreen(onVsCpu = {}, onVsLocal = {}, onVsLan = {}, onAbout = {})
     }
 }
