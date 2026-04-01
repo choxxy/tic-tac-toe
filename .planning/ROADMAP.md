@@ -142,8 +142,41 @@ Plans:
 
 ---
 
+## Phase 6: Dependency Injection (Hilt)
+**Prerequisite:** Phase 5 (Complete Polish).
+**Goal:** Refactor architecture to use Hilt for cleaner dependency management.
+**Plans:** 2 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Hilt Infrastructure (Dependencies, Application class, AppModule).
+- [ ] 06-02-PLAN.md — ViewModel & Navigation Refactor (ViewModels, MainActivity).
+
+### 6.1 Hilt Setup
+- [ ] Configure Hilt Gradle plugins and dependencies.
+- [ ] Create `TicTacToeApplication` class with `@HiltAndroidApp`.
+- [ ] Implement `AppModule` for providing `SoundManager` and `GameSocketManager`.
+
+### 6.2 ViewModel Refactor
+- [ ] Refactor `GameViewModel` to use `@HiltViewModel`.
+- [ ] Refactor `LanLobbyViewModel` to use `@HiltViewModel`.
+- [ ] Update `MainActivity` and `NavHost` to use Hilt's `hiltViewModel()` factory.
+
+---
+
+## Phase 7: Final Verification (UAT)
+**Prerequisite:** Phase 6 (Hilt Refactor).
+**Goal:** Final end-to-end validation and performance audit.
+
+### 7.1 User Acceptance Testing
+- [ ] Conduct end-to-end testing of all modes (CPU, Local, LAN).
+- [ ] Verify "Unbeatable" Hard AI in final build.
+- [ ] Final performance check (60fps target).
+
+---
+
 ## Success Criteria
 1. [ ] **Unbeatable:** "Hard" CPU never loses a game in automated testing.
 2. [ ] **Low Friction:** LAN game connection starts within 3 taps and <5 seconds discovery.
 3. [ ] **Stability:** No crashes on rotation or sudden LAN disconnect.
 4. [ ] **Quality:** 60fps animations on mid-range Android 9+ devices.
+5. [ ] **Architecture:** Clean DI implementation with Hilt.
