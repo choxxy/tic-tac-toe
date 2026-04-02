@@ -5,6 +5,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -56,14 +58,24 @@ class GameSocketManagerTest {
         // Small delay to ensure collectors are registered
         delay(500)
         
-        hostManager.send(hostMessage)
-        clientManager.send(clientMessage)
+        val hostSendResult = hostManager.send(hostMessage)
+        val clientSendResult = clientManager.send(clientMessage)
+        
+        assertTrue("Host send should return true", hostSendResult)
+        assertTrue("Client send should return true", clientSendResult)
         
         assertEquals(hostMessage, clientReceived.withTimeout(5000))
         assertEquals(clientMessage, hostReceived.withTimeout(5000))
 
         clientJob.cancelAndJoin()
         hostJob.cancelAndJoin()
+    }
+
+    @Test
+    fun testSendWhenNotConnectedReturnsFalse() = runBlocking {
+        val manager = GameSocketManager()
+        val result = manager.send(GameMessage.Heartbeat)
+        assertFalse("Send should return false when not connected", result)
     }
 
     private suspend fun <T> Deferred<T>.withTimeout(timeoutMillis: Long): T {
