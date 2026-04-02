@@ -84,9 +84,7 @@ class GameViewModel @Inject constructor(
         heartbeatJob = viewModelScope.launch {
             while (isActive) {
                 delay(2000)
-                try {
-                    socketManager.send(GameMessage.Heartbeat)
-                } catch (e: Exception) {
+                if (!socketManager.send(GameMessage.Heartbeat)) {
                     handleDisconnect()
                     break
                 }
@@ -211,7 +209,9 @@ class GameViewModel @Inject constructor(
             } else {
                 // Guest: send move request to host
                 viewModelScope.launch {
-                    socketManager.send(GameMessage.Move(index))
+                    if (!socketManager.send(GameMessage.Move(index))) {
+                        handleDisconnect()
+                    }
                 }
             }
         } else {
@@ -333,7 +333,9 @@ class GameViewModel @Inject constructor(
      */
     private fun broadcastState() {
         viewModelScope.launch {
-            socketManager.send(GameMessage.SyncState(_uiState.value.gameState))
+            if (!socketManager.send(GameMessage.SyncState(_uiState.value.gameState))) {
+                handleDisconnect()
+            }
         }
     }
 

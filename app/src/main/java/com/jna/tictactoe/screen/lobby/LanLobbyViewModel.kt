@@ -96,7 +96,9 @@ class LanLobbyViewModel @Inject constructor(
                 }
                 // Connection established!
                 Log.d(TAG, "Opponent connected!")
-                performHandshake(true)
+                if (!performHandshake(true)) {
+                    throw java.io.IOException("Handshake failed")
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Error hosting: ${e.message}")
                 _uiState.update { it.copy(error = "Hosting error: ${e.message}", isHosting = false, isWaitingForOpponent = false) }
@@ -131,7 +133,9 @@ class LanLobbyViewModel @Inject constructor(
             try {
                 gameSocketManager.connect(host.host.hostAddress ?: "localhost", host.port)
                 Log.d(TAG, "Connected to host!")
-                performHandshake(false)
+                if (!performHandshake(false)) {
+                    throw java.io.IOException("Handshake failed")
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Error connecting: ${e.message}")
                 _uiState.update { it.copy(error = "Connection failed: ${e.message}", isConnecting = false) }
@@ -150,8 +154,8 @@ class LanLobbyViewModel @Inject constructor(
         }
     }
 
-    private suspend fun performHandshake(isHost: Boolean) {
-        gameSocketManager.send(GameMessage.Handshake(_uiState.value.playerName))
+    private suspend fun performHandshake(isHost: Boolean): Boolean {
+        return gameSocketManager.send(GameMessage.Handshake(_uiState.value.playerName))
     }
 
     override fun onCleared() {
