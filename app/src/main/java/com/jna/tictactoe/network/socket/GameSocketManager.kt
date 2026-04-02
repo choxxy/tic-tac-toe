@@ -45,6 +45,8 @@ class GameSocketManager {
     )
     val incomingMessages: SharedFlow<GameMessage> = _incomingMessages.asSharedFlow()
 
+    val isConnected: Boolean get() = writer != null
+
     /**
      * Hosts a game on an auto-assigned port.
      * Invokes [onPortAvailable] when the server socket is ready.
@@ -121,18 +123,15 @@ class GameSocketManager {
         socket = null
     }
 
-    suspend fun send(message: GameMessage) = withContext(Dispatchers.IO) {
+    suspend fun send(message: GameMessage): Boolean = withContext(Dispatchers.IO) {
         try {
+            val currentWriter = writer ?: return@withContext false
             val jsonString = json.encodeToString(message)
-            val currentWriter = writer
-            if (currentWriter != null) {
-                currentWriter.println(jsonString)
-            } else {
-                throw IOException("Not connected")
-            }
+            currentWriter.println(jsonString)
+            true
         } catch (e: Exception) {
             Log.e(TAG, "Error sending message: ${e.message}")
-            throw e
+            false
         }
     }
 }
