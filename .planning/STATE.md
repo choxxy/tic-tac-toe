@@ -19,6 +19,7 @@
     - [ ] Phase 7: Final Verification (UAT)
 
 ## Recent Activity
+- **2026-04-02:** Completed quick task 260402-n4v: Fix IOException: Not connected in GameSocketManager.kt:131
 - **2026-04-01:** Completed Phase 5 (Polish & Aesthetics):
     - Implemented `SoundManager` with `SoundPool` for low-latency audio feedback.
     - Added piece placement animations (scale + fade) with spring physics.
@@ -68,3 +69,4 @@
 | Date | Workflow | Task | Status |
 |------|----------|------|--------|
 | 2026-04-02 | fast | Fixed blocking socket.host and socket.connect methods | ✅ |
+| 260402-n4v | Fix IOException: Not connected in GameSocketManager.kt:131 | 2026-04-02 | e23db82 | [260402-n4v-fix-ioexception-not-connected-in-gamesoc](./quick/260402-n4v-fix-ioexception-not-connected-in-gamesoc/) |
