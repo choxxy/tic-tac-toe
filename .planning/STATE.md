@@ -63,3 +63,8 @@
 - [ ] Verify "Unbeatable" Hard AI in final build.
 - [ ] Final performance check (60fps target).
 - [ ] Project wrap-up and documentation finalization.
+
+## Quick Tasks Completed
+| Date | Workflow | Task | Status |
+|------|----------|------|--------|
+| 2026-04-02 | fast | Fixed blocking socket.host and socket.connect methods | ✅ |

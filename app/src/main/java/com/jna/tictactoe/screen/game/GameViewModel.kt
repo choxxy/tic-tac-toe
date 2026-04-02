@@ -73,6 +73,7 @@ class GameViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         soundManager.release()
+        socketManager.disconnect()
     }
 
     /**
