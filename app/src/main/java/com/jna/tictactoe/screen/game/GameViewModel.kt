@@ -201,7 +201,7 @@ class GameViewModel @Inject constructor(
 
         if (args.mode == GameMode.VS_LAN) {
             // In LAN mode, check if it's actually our turn
-            if (currentState.isWaitingForPeerMove) return
+           if (currentState.isWaitingForPeerMove) return
 
             if (args.isHost) {
                 // Host: apply locally and sync
@@ -226,10 +226,12 @@ class GameViewModel @Inject constructor(
      * Resets the game board for a new match while preserving the session score.
      */
     fun resetGame() {
-        _uiState.update { 
+        _uiState.update {
             it.copy(
                 gameState = GameState(mode = args.mode),
-                isThinking = false
+                isThinking = false,
+                isHost = args.isHost,
+                peerName = args.peerName
             )
         }
         
