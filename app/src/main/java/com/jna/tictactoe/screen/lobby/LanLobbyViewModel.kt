@@ -10,12 +10,12 @@ import com.jna.tictactoe.network.model.GameMessage
 import com.jna.tictactoe.network.socket.GameSocketManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -44,12 +44,13 @@ class LanLobbyViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(LanLobbyUiState())
     val uiState: StateFlow<LanLobbyUiState> = _uiState.asStateFlow()
 
-    private val _events = MutableSharedFlow<LanLobbyEvent>()
-    val events: SharedFlow<LanLobbyEvent> = _events.asSharedFlow()
+    private val _eventChannel = Channel<LanLobbyEvent>(Channel.BUFFERED)
+    val events: Flow<LanLobbyEvent> = _eventChannel.receiveAsFlow()
 
     private var hostingJob: Job? = null
     private var discoveryJob: Job? = null
     private var messageJob: Job? = null
+    private var gameStarted = false
 
     init {
         startDiscovery()
@@ -148,7 +149,8 @@ class LanLobbyViewModel @Inject constructor(
             gameSocketManager.incomingMessages.collect { message ->
                 if (message is GameMessage.Handshake) {
                     Log.d(TAG, "Received handshake from ${message.playerName}")
-                    _events.emit(LanLobbyEvent.GameStarted(message.playerName, _uiState.value.selectedTab == 0))
+                    gameStarted = true
+                    _eventChannel.send(LanLobbyEvent.GameStarted(message.playerName, _uiState.value.selectedTab == 0))
                 }
             }
         }
@@ -160,8 +162,9 @@ class LanLobbyViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        stopHosting()
+        if (!gameStarted) stopHosting()
         stopDiscovery()
         messageJob?.cancel()
+        _eventChannel.close()
     }
 }

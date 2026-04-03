@@ -258,7 +258,9 @@ private fun HostContent(
         ) {
             Text(
                 if (isHosting) "STOP HOSTING" else "START HOSTING", 
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onPrimary
+
             )
         }
     }

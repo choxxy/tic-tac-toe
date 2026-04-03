@@ -8,6 +8,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -44,8 +45,6 @@ class GameSocketManager {
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
     val incomingMessages: SharedFlow<GameMessage> = _incomingMessages.asSharedFlow()
-
-    val isConnected: Boolean get() = writer != null
 
     /**
      * Hosts a game on an auto-assigned port.
@@ -86,12 +85,16 @@ class GameSocketManager {
     }
 
     private suspend fun handleConnection(s: Socket) {
-        val reader = BufferedReader(InputStreamReader(s.getInputStream()))
+        val reader = BufferedReader(InputStreamReader(withContext(Dispatchers.IO) {
+            s.getInputStream()
+        }))
         try {
-            while (coroutineContext.isActive) {
+            while (currentCoroutineContext().isActive) {
                 val line = try {
-                    reader.readLine()
-                } catch (e: Exception) {
+                    withContext(Dispatchers.IO) {
+                        reader.readLine()
+                    }
+                } catch (e: IOException) {
                     null
                 } ?: break
                 
@@ -103,7 +106,7 @@ class GameSocketManager {
                 }
             }
         } catch (e: IOException) {
-            if (coroutineContext.isActive) {
+            if (currentCoroutineContext().isActive) {
                 Log.e(TAG, "Connection error: ${e.message}")
             }
         } finally {

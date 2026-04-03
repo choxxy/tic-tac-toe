@@ -61,13 +61,10 @@ class GameViewModel @Inject constructor(
     private var lastMessageReceivedTime = System.currentTimeMillis()
     private var heartbeatJob: Job? = null
     private var reconnectionJob: Job? = null
+    private var networkJob: Job? = null
 
     init {
         soundManager.loadSounds()
-        if (args.mode == GameMode.VS_LAN) {
-            observeNetworkMessages()
-            startHeartbeat()
-        }
     }
 
     override fun onCleared() {
@@ -180,6 +177,10 @@ class GameViewModel @Inject constructor(
      */
     fun initGame(game: Game) {
         args = game
+        if (game.mode == GameMode.VS_LAN) {
+            observeNetworkMessages()
+            startHeartbeat()
+        }
         resetGame()
     }
 
@@ -297,7 +298,8 @@ class GameViewModel @Inject constructor(
      * Observes incoming messages from the network socket.
      */
     private fun observeNetworkMessages() {
-        viewModelScope.launch {
+        networkJob?.cancel()
+        networkJob = viewModelScope.launch {
             socketManager.incomingMessages.collect { message ->
                 lastMessageReceivedTime = System.currentTimeMillis()
                 when (message) {
