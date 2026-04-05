@@ -27,6 +27,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +39,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jna.tictactoe.data.UserPreferences
+import com.jna.tictactoe.game.model.Difficulty
 import com.jna.tictactoe.ui.theme.TictactoeTheme
 import com.jna.tictactoe.ui.theme.ZenithOnBackground
 import com.jna.tictactoe.ui.theme.ZenithOnPrimaryContainer
@@ -49,18 +55,26 @@ import com.jna.tictactoe.ui.theme.ZenithSurfaceContainerLowest
 /**
  * The primary entry point for the application, displaying game mode options and player profile.
  * 
+ * @param userPreferences The current user preferences for display.
  * @param onVsCpu Callback when "Play vs CPU" is selected.
  * @param onVsLocal Callback when "Local" (Pass and Play) is selected.
  * @param onVsLan Callback when "Wi-Fi / LAN" is selected.
  * @param onAbout Callback when "About" is selected.
+ * @param onSettings Callback when "Settings" is selected.
+ * @param onProfile Callback when the profile card is selected.
  */
 @Composable
 fun MainMenuScreen(
-    onVsCpu: () -> Unit,
+    userPreferences: UserPreferences = UserPreferences(),
+    onVsCpu: (Difficulty) -> Unit,
     onVsLocal: () -> Unit,
     onVsLan: () -> Unit,
-    onAbout: () -> Unit
+    onAbout: () -> Unit,
+    onSettings: () -> Unit,
+    onProfile: () -> Unit
 ) {
+    var showDifficultyDialog by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -72,7 +86,7 @@ fun MainMenuScreen(
                 .padding(horizontal = 24.dp)
         ) {
             // Top Navigation Bar
-            TopNavigationBar(onAbout = onAbout)
+            TopNavigationBar(onAbout = onAbout, onSettings = onSettings)
 
             Spacer(modifier = Modifier.height(56.dp))
 
@@ -103,7 +117,7 @@ fun MainMenuScreen(
             GameModeCardLarge(
                 title = "Play vs CPU",
                 subtitle = "Challenge our adaptive neural engine.",
-                onClick = onVsCpu
+                onClick = { showDifficultyDialog = true }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -133,12 +147,23 @@ fun MainMenuScreen(
 
             // Profile Card
             ProfileCard(
-                name = "Alex Grayson",
-                rank = "RANKED AMATEUR",
-                winRate = "64%"
+                name = userPreferences.name,
+                rank = userPreferences.rank,
+                winRate = "${(userPreferences.winRate * 100).toInt()}%",
+                onClick = onProfile
             )
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        if (showDifficultyDialog) {
+            DifficultyDialog(
+                onDismissRequest = { showDifficultyDialog = false },
+                onDifficultySelected = { difficulty ->
+                    showDifficultyDialog = false
+                    onVsCpu(difficulty)
+                }
+            )
         }
     }
 }
@@ -147,7 +172,10 @@ fun MainMenuScreen(
  * Displays the top app bar with app title and navigation actions.
  */
 @Composable
-private fun TopNavigationBar(onAbout: () -> Unit) {
+private fun TopNavigationBar(
+    onAbout: () -> Unit,
+    onSettings: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -189,7 +217,7 @@ private fun TopNavigationBar(onAbout: () -> Unit) {
                 tint = ZenithOnBackground,
                 modifier = Modifier
                     .size(28.dp)
-                    .clickable { }
+                    .clickable(onClick = onSettings)
             )
         }
     }
@@ -340,13 +368,15 @@ private fun GameModeCardSmall(
 private fun ProfileCard(
     name: String,
     rank: String,
-    winRate: String
+    winRate: String,
+    onClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(ZenithSurfaceContainerLow)
+            .clickable(onClick = onClick)
             .padding(16.dp)
     ) {
         Row(
@@ -431,6 +461,6 @@ private fun ProfileCard(
 @Composable
 fun MainMenuScreenPreview() {
     TictactoeTheme {
-        MainMenuScreen(onVsCpu = {}, onVsLocal = {}, onVsLan = {}, onAbout = {})
+        MainMenuScreen(onVsCpu = {}, onVsLocal = {}, onVsLan = {}, onAbout = {}, onSettings = {}, onProfile = {})
     }
 }
