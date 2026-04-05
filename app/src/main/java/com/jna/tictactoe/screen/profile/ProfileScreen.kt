@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -29,6 +30,7 @@ import coil.compose.AsyncImage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.jna.tictactoe.R
 import com.jna.tictactoe.util.createTempUri
 
 
@@ -117,15 +119,16 @@ fun ProfileScreen(
                 contentAlignment = Alignment.BottomEnd
             ) {
                 AsyncImage(
-                    model = userPreferences.profilePictureUri,
+                    model = userPreferences.profilePicturePath,
                     contentDescription = "User Profile Picture",
                     modifier = Modifier
                         .size(120.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primaryContainer),
                     contentScale = ContentScale.Crop,
-
-                    )
+                    placeholder = painterResource(id = R.drawable.ic_launcher_foreground),
+                    error = painterResource(id = R.drawable.ic_launcher_foreground)
+                )
                 Box(
                     modifier = Modifier
                         .clip(CircleShape)
