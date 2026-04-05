@@ -1,24 +1,30 @@
 # Project State: Zenith Grid (Tic-Tac-Toe)
 
 ## Overview
-- **Status:** Active (Final Verification)
-- **Current Phase:** Phase 6: Final Verification (UAT)
-- **Last Updated:** 2026-04-01
+- **Status:** Active
+- **Current Phase:** Phase 9: Profile Picture (1/4)
+- **Last Updated:** 2026-04-05
 
 ## Milestone Progress
 - [x] Milestone 1: Foundation & Engine (Phases 1-2)
-    - [x] Phase 1: Foundation & Navigation
-    - [x] Phase 2: Core Game Logic
 - [x] Milestone 2: Single Device Gameplay (Phase 3)
-    - [x] Phase 3: Game UI & Interaction
 - [x] Milestone 3: Multiplayer & Polish (Phases 4-5)
-    - [x] Phase 4: LAN Multiplayer
-    - [x] Phase 5: Polish & Aesthetics
-- [ ] Milestone 4: Final Refactor & Verification (Phases 6-7)
-    - [ ] Phase 6: Dependency Injection (Hilt)
-    - [ ] Phase 7: Final Verification (UAT)
+- [x] Milestone 4: Final Refactor & Verification (Phases 6-7)
+- [ ] Milestone 5: User Profiles (Phase 9)
+    - [ ] Phase 9: Profile Picture
 
 ## Recent Activity
+- **2026-04-05:** Started Phase 9 (Profile Picture):
+    - Added dependencies for Coil (image loading) and Accompanist Permissions (runtime permissions).
+    - Declared `CAMERA` permission in `AndroidManifest.xml`.
+- **2026-04-05:** Completed Phase 6 (Dependency Injection - Hilt):
+    - Configured Hilt and Kapt dependencies.
+    - Implemented `@HiltAndroidApp` in `TicTacToeApplication`.
+    - Created `AppModule` for singleton dependency provision.
+    - Refactored `GameViewModel` and `LanLobbyViewModel` to use constructor injection.
+    - Updated `MainActivity` and navigation to use `hiltViewModel()`.
+    - Removed legacy manual provider classes.
+    - Verified architectural integrity and regression tested core logic.
 - **2026-04-02:** Completed quick task 260402-n4v: Fix IOException: Not connected in GameSocketManager.kt:131
 - **2026-04-01:** Completed Phase 5 (Polish & Aesthetics):
     - Implemented `SoundManager` with `SoundPool` for low-latency audio feedback.
@@ -58,12 +64,12 @@
 - **Foundation:** Infrastructure established, package structure set, navigation host configured in `MainActivity`.
 - **Design:** "The Elevated Playfield" design system implemented with Manrope typography and Material 3 theme tokens.
 - **Polish:** Premium experience achieved via SoundPool audio, spring-based animations, and particle effects.
+- **Architecture:** Modernized with Hilt Dependency Injection for cleaner, testable state management.
 
-## Active Tasks (Phase 6)
-- [ ] Conduct final end-to-end user acceptance testing.
-- [ ] Verify "Unbeatable" Hard AI in final build.
-- [ ] Final performance check (60fps target).
-- [ ] Project wrap-up and documentation finalization.
+## Active Tasks (Phase 9)
+- [ ] Implement profile picture selection UI.
+- [ ] Integrate camera and gallery for image picking.
+- [ ] Persist profile picture choice.
 
 ## Quick Tasks Completed
 | Date | Workflow | Task | Status |
