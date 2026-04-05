@@ -1,24 +1,38 @@
 package com.jna.tictactoe.screen.profile
 
+import android.Manifest
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose:hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.jna.tictactoe.util.createTempUri
 
-@OptIn(ExperimentalMaterial3Api::class)
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun ProfileScreen(
     onBack: () -> Unit,
@@ -26,6 +40,47 @@ fun ProfileScreen(
 ) {
     val userPreferences by viewModel.userPreferences.collectAsState()
     var nameInput by remember(userPreferences.name) { mutableStateOf(userPreferences.name) }
+    val showDialog by viewModel.showImageSourceDialog.collectAsState()
+    val context = LocalContext.current
+    var tempUri by remember { mutableStateOf<Uri?>(null) }
+
+
+    val pickMedia =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            viewModel.onImageSelected(uri)
+        }
+    val cameraLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.TakePicture()) { success ->
+            if (success) {
+                viewModel.onImageSelected(tempUri)
+            }
+        }
+
+    val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
+
+
+    if (showDialog) {
+        ImageSourceDialog(
+            onDismiss = { viewModel.onHideImageSourceDialog() },
+            onCameraClick = {
+                viewModel.onHideImageSourceDialog()
+                if (cameraPermissionState.status.isGranted) {
+                    tempUri = context.createTempUri()
+                    cameraLauncher.launch(tempUri)
+                } else {
+                    cameraPermissionState.launchPermissionRequest()
+                }
+            },
+            onGalleryClick = {
+                viewModel.onHideImageSourceDialog()
+                pickMedia.launch(
+                    androidx.activity.result.PickVisualMediaRequest(
+                        ActivityResultContracts.PickVisualMedia.ImageOnly
+                    )
+                )
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -57,21 +112,37 @@ fun ProfileScreen(
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Avatar placeholder
+            // Avatar
             Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.BottomEnd
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.Person,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                AsyncImage(
+                    model = userPreferences.profilePictureUri,
+                    contentDescription = "User Profile Picture",
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentScale = ContentScale.Crop,
+
+                    )
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.secondaryContainer)
+                        .clickable { viewModel.onShowImageSourceDialog() }
+                        .padding(8.dp)
+
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = "Edit Profile Picture",
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
+
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -86,7 +157,7 @@ fun ProfileScreen(
 
             OutlinedTextField(
                 value = nameInput,
-                onValueChange = { 
+                onValueChange = {
                     nameInput = it
                     viewModel.updateName(it)
                 },
@@ -122,7 +193,10 @@ fun ProfileScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    StatItem(label = "Win Rate", value = "${(userPreferences.winRate * 100).toInt()}%")
+                    StatItem(
+                        label = "Win Rate",
+                        value = "${(userPreferences.winRate * 100).toInt()}%"
+                    )
                     StatItem(label = "Rank", value = userPreferences.rank)
                 }
             }
@@ -147,4 +221,40 @@ fun StatItem(label: String, value: String) {
             fontWeight = FontWeight.Light
         )
     }
+}
+
+@Composable
+fun ImageSourceDialog(
+    onDismiss: () -> Unit,
+    onCameraClick: () -> Unit,
+    onGalleryClick: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Choose Image Source") },
+        text = { Text("Select a source for your profile picture.") },
+        confirmButton = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Button(onClick = onCameraClick, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.Outlined.CameraAlt, contentDescription = "Camera")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Camera")
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(onClick = onGalleryClick, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.Outlined.PhotoLibrary, contentDescription = "Gallery")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Gallery")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
