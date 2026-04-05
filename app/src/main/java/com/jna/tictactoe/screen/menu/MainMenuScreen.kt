@@ -19,13 +19,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.ElectricBolt
 import androidx.compose.material.icons.outlined.Group
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +41,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.jna.tictactoe.R
 import com.jna.tictactoe.data.UserPreferences
 import com.jna.tictactoe.game.model.Difficulty
 import com.jna.tictactoe.ui.theme.TictactoeTheme
@@ -51,6 +55,8 @@ import com.jna.tictactoe.ui.theme.ZenithSurface
 import com.jna.tictactoe.ui.theme.ZenithSurfaceContainerHigh
 import com.jna.tictactoe.ui.theme.ZenithSurfaceContainerLow
 import com.jna.tictactoe.ui.theme.ZenithSurfaceContainerLowest
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
 
 /**
  * The primary entry point for the application, displaying game mode options and player profile.
@@ -63,6 +69,7 @@ import com.jna.tictactoe.ui.theme.ZenithSurfaceContainerLowest
  * @param onSettings Callback when "Settings" is selected.
  * @param onProfile Callback when the profile card is selected.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainMenuScreen(
     userPreferences: UserPreferences = UserPreferences(),
@@ -75,95 +82,94 @@ fun MainMenuScreen(
 ) {
     var showDifficultyDialog by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(ZenithSurface)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp)
-        ) {
-            // Top Navigation Bar
-            TopNavigationBar(onAbout = onAbout, onSettings = onSettings)
-
-            Spacer(modifier = Modifier.height(56.dp))
-
-            // Current Season Header
-            Column {
-                Text(
-                    text = "CURRENT SEASON",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.1.sp
-                    ),
-                    color = ZenithOnSurfaceVariant.copy(alpha = 0.8f)
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "The Grand Master\nSeries",
-                    style = MaterialTheme.typography.displayMedium.copy(
-                        lineHeight = 44.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = ZenithOnBackground
-                )
-            }
-
-            Spacer(modifier = Modifier.height(48.dp))
-
-            // Primary Card: VS CPU
-            GameModeCardLarge(
-                title = "Play vs CPU",
-                subtitle = "Challenge our adaptive neural engine.",
-                onClick = { showDifficultyDialog = true }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Secondary Cards: Local & LAN
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                GameModeCardSmall(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Outlined.Group,
-                    title = "Local",
-                    subtitle = "Two players, one\ndevice.",
-                    onClick = onVsLocal
-                )
-                GameModeCardSmall(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Filled.Public,
-                    title = "Wi-Fi / LAN",
-                    subtitle = "Play over local\nnetwork.",
-                    onClick = onVsLan
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Profile Card
-            ProfileCard(
-                name = userPreferences.name,
-                rank = userPreferences.rank,
-                winRate = "${(userPreferences.winRate * 100).toInt()}%",
-                onClick = onProfile
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-
-        if (showDifficultyDialog) {
-            DifficultyDialog(
-                onDismissRequest = { showDifficultyDialog = false },
-                onDifficultySelected = { difficulty ->
-                    showDifficultyDialog = false
-                    onVsCpu(difficulty)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text("TIC TAC TOE")
+                },
+                navigationIcon = {
+                    Icon(
+                        imageVector = Icons.Default.GridView,
+                        contentDescription = "Menu",
+                        tint = ZenithOnBackground,
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clickable { }
+                    )
                 }
             )
+            //TopNavigationBar(onAbout = onAbout, onSettings = onSettings)
+
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(ZenithSurface)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp)
+            ) {
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Primary Card: VS CPU
+                GameModeCardLarge(
+                    title = "Play vs CPU",
+                    subtitle = "Challenge our adaptive neural engine.",
+                    onClick = { showDifficultyDialog = true }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Secondary Cards: Local & LAN
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    GameModeCardSmall(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Outlined.Group,
+                        title = "Local",
+                        subtitle = "Two players, one\ndevice.",
+                        onClick = onVsLocal
+                    )
+                    GameModeCardSmall(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Filled.Public,
+                        title = "Wi-Fi / LAN",
+                        subtitle = "Play over local\nnetwork.",
+                        onClick = onVsLan
+                    )
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Profile Card
+                ProfileCard(
+                    name = userPreferences.name,
+                    rank = userPreferences.rank,
+                    winRate = "${(userPreferences.winRate * 100).toInt()}%",
+                    profilePicturePath = userPreferences.profilePicturePath,
+                    onClick = onProfile
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            if (showDifficultyDialog) {
+                DifficultyDialog(
+                    onDismissRequest = { showDifficultyDialog = false },
+                    onDifficultySelected = { difficulty ->
+                        showDifficultyDialog = false
+                        onVsCpu(difficulty)
+                    }
+                )
+            }
         }
     }
 }
@@ -179,7 +185,7 @@ private fun TopNavigationBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 56.dp),
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -369,6 +375,7 @@ private fun ProfileCard(
     name: String,
     rank: String,
     winRate: String,
+    profilePicturePath: String?,
     onClick: () -> Unit
 ) {
     Box(
@@ -387,22 +394,18 @@ private fun ProfileCard(
             Box(
                 modifier = Modifier.size(56.dp)
             ) {
-                Box(
+                AsyncImage(
+                    model = profilePicturePath,
+                    contentDescription = "User Profile Picture",
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
                         .background(ZenithSurfaceContainerHigh)
-                ) {
-                    // Simple placeholder for avatar
-                    Icon(
-                        imageVector = Icons.Outlined.Group,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(8.dp),
-                        tint = ZenithOnSurfaceVariant
-                    )
-                }
+                        .align(Alignment.Center),
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(id = R.drawable.ic_launcher_foreground),
+                    error = painterResource(id = R.drawable.ic_launcher_foreground)
+                )
                 // Online indicator
                 Box(
                     modifier = Modifier
@@ -461,6 +464,12 @@ private fun ProfileCard(
 @Composable
 fun MainMenuScreenPreview() {
     TictactoeTheme {
-        MainMenuScreen(onVsCpu = {}, onVsLocal = {}, onVsLan = {}, onAbout = {}, onSettings = {}, onProfile = {})
+        MainMenuScreen(
+            onVsCpu = {},
+            onVsLocal = {},
+            onVsLan = {},
+            onAbout = {},
+            onSettings = {},
+            onProfile = {})
     }
 }
