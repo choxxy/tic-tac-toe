@@ -6,5 +6,6 @@ data class UserPreferences(
     val winRate: Float = 0f,
     val soundEnabled: Boolean = true,
     val hapticsEnabled: Boolean = true,
-    val darkModeEnabled: Boolean = false
+    val darkModeEnabled: Boolean = false,
+    val profilePicturePath: String? = null
 )

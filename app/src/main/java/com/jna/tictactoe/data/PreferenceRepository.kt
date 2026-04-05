@@ -24,9 +24,10 @@ class PreferenceRepository @Inject constructor(
         val SOUND_ENABLED = booleanPreferencesKey("sound_enabled")
         val HAPTICS_ENABLED = booleanPreferencesKey("haptics_enabled")
         val DARK_MODE_ENABLED = booleanPreferencesKey("dark_mode_enabled")
-    }
+        val PROFILE_PICTURE_PATH = stringPreferencesKey("profile_picture_path")
+        }
 
-    val userPreferencesFlow: Flow<UserPreferences> = dataStore.data
+        val userPreferencesFlow: Flow<UserPreferences> = dataStore.data
         .catch { exception ->
             if (exception is IOException) {
                 emit(emptyPreferences())
@@ -41,15 +42,22 @@ class PreferenceRepository @Inject constructor(
                 winRate = preferences[PreferencesKeys.WIN_RATE] ?: 0f,
                 soundEnabled = preferences[PreferencesKeys.SOUND_ENABLED] ?: true,
                 hapticsEnabled = preferences[PreferencesKeys.HAPTICS_ENABLED] ?: true,
-                darkModeEnabled = preferences[PreferencesKeys.DARK_MODE_ENABLED] ?: false
+                darkModeEnabled = preferences[PreferencesKeys.DARK_MODE_ENABLED] ?: false,
+                profilePicturePath = preferences[PreferencesKeys.PROFILE_PICTURE_PATH]
             )
         }
 
-    suspend fun updateName(name: String) {
+        suspend fun updateName(name: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.NAME] = name
         }
-    }
+        }
+
+        suspend fun updateProfilePicturePath(path: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PROFILE_PICTURE_PATH] = path
+        }
+        }
 
     suspend fun updateSoundEnabled(enabled: Boolean) {
         dataStore.edit { preferences ->
