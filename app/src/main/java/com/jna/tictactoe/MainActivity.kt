@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jna.tictactoe.game.model.Difficulty
 import com.jna.tictactoe.game.model.GameMode
@@ -17,6 +18,8 @@ import com.jna.tictactoe.navigation.About
 import com.jna.tictactoe.navigation.Game
 import com.jna.tictactoe.navigation.Lobby
 import com.jna.tictactoe.navigation.Menu
+import com.jna.tictactoe.navigation.Profile
+import com.jna.tictactoe.navigation.Settings
 import com.jna.tictactoe.navigation.Splash
 import com.jna.tictactoe.screen.about.AboutScreen
 import com.jna.tictactoe.screen.game.GameScreen
@@ -24,6 +27,8 @@ import com.jna.tictactoe.screen.game.GameViewModel
 import com.jna.tictactoe.screen.lobby.LanLobbyScreen
 import com.jna.tictactoe.screen.lobby.LanLobbyViewModel
 import com.jna.tictactoe.screen.menu.MainMenuScreen
+import com.jna.tictactoe.screen.profile.ProfileScreen
+import com.jna.tictactoe.screen.settings.SettingsScreen
 import com.jna.tictactoe.screen.splash.SplashScreen
 import com.jna.tictactoe.ui.theme.TictactoeTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -66,9 +71,13 @@ class MainActivity : ComponentActivity() {
                     }
                     // Main menu screen with game mode selection
                     composable<Menu> {
+                        val profileViewModel: com.jna.tictactoe.screen.profile.ProfileViewModel = hiltViewModel()
+                        val userPreferences = profileViewModel.userPreferences.collectAsState().value
+                        
                         MainMenuScreen(
-                            onVsCpu = {
-                                navController.navigate(Game(mode = GameMode.VS_CPU, difficulty = Difficulty.EASY))
+                            userPreferences = userPreferences,
+                            onVsCpu = { difficulty ->
+                                navController.navigate(Game(mode = GameMode.VS_CPU, difficulty = difficulty))
                             },
                             onVsLocal = {
                                 navController.navigate(Game(mode = GameMode.VS_HUMAN_LOCAL))
@@ -78,12 +87,30 @@ class MainActivity : ComponentActivity() {
                             },
                             onAbout = {
                                 navController.navigate(About)
+                            },
+                            onSettings = {
+                                navController.navigate(Settings)
+                            },
+                            onProfile = {
+                                navController.navigate(Profile)
                             }
                         )
                     }
                     // About screen with app info and credits
                     composable<About> {
                         AboutScreen(
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                    // Settings screen with user preferences
+                    composable<Settings> {
+                        SettingsScreen(
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                    // Profile screen for player name and stats
+                    composable<Profile> {
+                        ProfileScreen(
                             onBack = { navController.popBackStack() }
                         )
                     }
