@@ -1,11 +1,27 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+current_phase: 09
+status: executing
+last_updated: "2026-04-08T09:10:12.450Z"
+progress:
+  total_phases: 7
+  completed_phases: 6
+  total_plans: 20
+  completed_plans: 20
+---
+
 # Project State: Zenith Grid (Tic-Tac-Toe)
 
 ## Overview
-- **Status:** Active
-- **Current Phase:** Phase 9: Profile Picture (3/4)
+
+- **Status:** Checkpoint — awaiting human verification of profile picture flow (Plan 4, Task 3)
+- **Current Phase:** 09
 - **Last Updated:** 2026-04-08
 
 ## Planka Tracking
+
 - **Project ID:** 1748557981382870045
 - **Board ID:** 1748558091659510815
 - **Lists:**
@@ -14,7 +30,9 @@
   - Done: 1748582561136772135
 
 ### Convention
+
 Planka is a secondary tracking system. Keep it in sync whenever STATE.md is updated:
+
 - When a phase/plan is **started**: create a card in "In Progress" list titled "{Phase N} — {Phase Name}" (or move existing card from Todo).
 - When a phase/plan is **completed**: move its card to the "Done" list.
 - When a quick task is **completed**: add a comment to the relevant phase card, or create a short-lived card in Done titled "Quick: {task-id}".
@@ -22,6 +40,7 @@ Planka is a secondary tracking system. Keep it in sync whenever STATE.md is upda
 - Do NOT block phase execution on Planka failures — Planka sync is best-effort.
 
 ## Milestone Progress
+
 - [x] Milestone 1: Foundation & Engine (Phases 1-2)
 - [x] Milestone 2: Single Device Gameplay (Phase 3)
 - [x] Milestone 3: Multiplayer & Polish (Phases 4-5)
@@ -30,6 +49,11 @@ Planka is a secondary tracking system. Keep it in sync whenever STATE.md is upda
     - [ ] Phase 9: Profile Picture
 
 ## Recent Activity
+
+- **2026-04-08:** Completed Phase 9, Plan 4 (Profile Picture Display) — code tasks done, awaiting human-verify checkpoint:
+    - Wired Coil AsyncImage in ProfileScreen to display profilePicturePath from ViewModel.
+    - Wired Coil AsyncImage in MainMenuScreen ProfileCard using profilePicturePath parameter.
+    - Full end-to-end flow ready for verification (camera/gallery → save → display on both screens → persist across restart).
 - **2026-04-06:** Completed Phase 9, Plan 3 (Profile Picture Storage):
     - Updated `PreferenceRepository` to store the profile picture path.
     - Implemented logic in `ProfileViewModel` to save the image to internal storage.
@@ -83,15 +107,18 @@ Planka is a secondary tracking system. Keep it in sync whenever STATE.md is upda
 - **2026-03-30:** Completed codebase mapping and domain research.
 
 ## Contextual Memory
+
 - **Foundation:** Infrastructure established, package structure set, navigation host configured in `MainActivity`.
 - **Design:** "The Elevated Playfield" design system implemented with Manrope typography and Material 3 theme tokens.
 - **Polish:** Premium experience achieved via SoundPool audio, spring-based animations, and particle effects.
 - **Architecture:** Modernized with Hilt Dependency Injection for cleaner, testable state management.
 
 ## Active Tasks (Phase 9)
-- [ ] Implement profile picture selection UI.
-- [ ] Integrate camera and gallery for image picking.
-- [ ] Persist profile picture choice.
+
+- [x] Implement profile picture selection UI.
+- [x] Integrate camera and gallery for image picking.
+- [x] Persist profile picture choice.
+- [ ] Human verification of full profile picture flow (Plan 4, Task 3 checkpoint).
 
 ## Quick Tasks Completed
 
