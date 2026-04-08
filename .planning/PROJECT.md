@@ -19,15 +19,21 @@ Two people should be able to pick up the same device — or two nearby devices �
 
 ### Active
 
-- [ ] 3×3 game board UI rendered in Compose
-- [ ] Core game logic: turn management, win detection (rows/cols/diagonals), draw detection
-- [ ] Human vs CPU mode with Easy / Medium / Hard difficulty (Hard = unbeatable minimax)
-- [ ] Human vs Human local mode (same device, Player 1 vs Player 2 alternating taps)
-- [ ] Human vs Human LAN mode with auto-discovery (mDNS/NSD — no manual IP entry)
-- [ ] Session score tracker: X wins / O wins / Draws — persists until app closes
-- [ ] Win/draw result dialog (simple popup) with winner name, Play Again, and New Match actions
-- [ ] Polished UX: animations on piece placement, win line highlight, sound effects, win celebration
-- [ ] LAN disconnect recovery: reconnecting spinner, resume game on success
+_(All core requirements validated — see Validated section below)_
+
+### Validated (Phase 9 Complete)
+
+- ✓ 3×3 game board UI rendered in Compose — Validated in Phase 3
+- ✓ Core game logic: turn management, win detection (rows/cols/diagonals), draw detection — Validated in Phase 2
+- ✓ Human vs CPU mode with Easy / Medium / Hard difficulty (Hard = unbeatable minimax) — Validated in Phase 2
+- ✓ Human vs Human local mode (same device) — Validated in Phase 3
+- ✓ Human vs Human LAN mode with auto-discovery (mDNS/NSD) — Validated in Phase 4
+- ✓ Session score tracker: X wins / O wins / Draws — Validated in Phase 3
+- ✓ Win/draw result dialog with Play Again and New Match actions — Validated in Phase 3
+- ✓ Polished UX: animations, win line highlight, sound effects, confetti — Validated in Phase 5
+- ✓ LAN disconnect recovery: reconnecting spinner, resume game on success — Validated in Phase 4
+- ✓ User profile with name, stats, and profile picture — Validated in Phase 9
+- ✓ Profile picture: camera/gallery selection, internal storage save, DataStore persistence — Validated in Phase 9
 
 ### Out of Scope
 
@@ -82,4 +88,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 after initialization*
+*Last updated: 2026-04-08 after Phase 9 (Profile Picture) completion — Milestone 5 complete*
