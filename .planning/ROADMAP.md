@@ -174,6 +174,26 @@ Plans:
 
 ---
 
+## Phase 10: Play Store Release Prep
+**Prerequisite:** Phase 9 (User Profiles complete, app verified).
+**Goal:** Publish Zenith Grid to Google Play Store — signed AAB, complete store listing, ASO screenshots uploaded, submitted for review.
+
+### 10.1 Build & Sign
+- [ ] Generate signed release AAB using release keystore.
+- [ ] Verify release build (minification, ProGuard, no debug flags).
+
+### 10.2 Store Listing
+- [ ] Write app title, short description, and full description with keywords.
+- [ ] Upload ASO screenshots (3 finals already in `screenshots/final/`).
+- [ ] Set content rating, category, and contact details.
+
+### 10.3 Submission
+- [ ] Create app on Google Play Console.
+- [ ] Upload signed AAB and fill all required metadata.
+- [ ] Submit for review.
+
+---
+
 ## Success Criteria
 1. [ ] **Unbeatable:** "Hard" CPU never loses a game in automated testing.
 2. [ ] **Low Friction:** LAN game connection starts within 3 taps and <5 seconds discovery.
