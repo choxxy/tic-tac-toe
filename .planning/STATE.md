@@ -2,9 +2,24 @@
 
 ## Overview
 - **Status:** Active
-- **Current Phase:** 9
-- **Current Plan:** 2/4
-- **Last Updated:** 2026-04-06
+- **Current Phase:** Phase 9: Profile Picture (3/4)
+- **Last Updated:** 2026-04-08
+
+## Planka Tracking
+- **Project ID:** 1748557981382870045
+- **Board ID:** 1748558091659510815
+- **Lists:**
+  - Todo: 1748582506266887205
+  - In Progress: 1748582538210706470
+  - Done: 1748582561136772135
+
+### Convention
+Planka is a secondary tracking system. Keep it in sync whenever STATE.md is updated:
+- When a phase/plan is **started**: create a card in "In Progress" list titled "{Phase N} — {Phase Name}" (or move existing card from Todo).
+- When a phase/plan is **completed**: move its card to the "Done" list.
+- When a quick task is **completed**: add a comment to the relevant phase card, or create a short-lived card in Done titled "Quick: {task-id}".
+- Use the MCP `mcp__planka__*` tools (create_card, update_card, move_card) with the IDs above.
+- Do NOT block phase execution on Planka failures — Planka sync is best-effort.
 
 ## Milestone Progress
 - [x] Milestone 1: Foundation & Engine (Phases 1-2)
@@ -15,6 +30,12 @@
     - [ ] Phase 9: Profile Picture
 
 ## Recent Activity
+- **2026-04-06:** Completed Phase 9, Plan 3 (Profile Picture Storage):
+    - Updated `PreferenceRepository` to store the profile picture path.
+    - Implemented logic in `ProfileViewModel` to save the image to internal storage.
+- **2026-04-06:** Completed Phase 9, Plan 2 (Profile Picture UI):
+    - Implemented `ProfileScreen` with a bottom sheet for choosing between Camera and Gallery.
+    - Added ViewModel logic to handle image selection intents.
 - **2026-04-05:** Started Phase 9 (Profile Picture):
     - Added dependencies for Coil (image loading) and Accompanist Permissions (runtime permissions).
     - Declared `CAMERA` permission in `AndroidManifest.xml`.
