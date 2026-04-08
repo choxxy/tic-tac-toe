@@ -94,7 +94,8 @@ Planka is a secondary tracking system. Keep it in sync whenever STATE.md is upda
 - [ ] Persist profile picture choice.
 
 ## Quick Tasks Completed
-| Date | Workflow | Task | Status |
-|------|----------|------|--------|
-| 2026-04-02 | fast | Fixed blocking socket.host and socket.connect methods | ✅ |
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
 | 260402-n4v | Fix IOException: Not connected in GameSocketManager.kt:131 | 2026-04-02 | e23db82 | [260402-n4v-fix-ioexception-not-connected-in-gamesoc](./quick/260402-n4v-fix-ioexception-not-connected-in-gamesoc/) |
+| 260408-gsg | Update state/plan to be updating planka with new tasks and tasks progress | 2026-04-08 | da17b9c | [260408-gsg-update-state-plan-to-be-updating-planka-](./quick/260408-gsg-update-state-plan-to-be-updating-planka-/) |
