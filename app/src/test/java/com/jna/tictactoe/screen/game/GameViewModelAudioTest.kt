@@ -2,8 +2,11 @@ package com.jna.tictactoe.screen.game
 
 import androidx.lifecycle.SavedStateHandle
 import com.jna.tictactoe.audio.SoundManager
+import com.jna.tictactoe.data.PreferenceRepository
+import com.jna.tictactoe.data.UserPreferences
 import com.jna.tictactoe.game.model.*
 import com.jna.tictactoe.network.socket.GameSocketManager
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
@@ -24,6 +27,9 @@ class GameViewModelAudioTest {
     @Mock
     private lateinit var socketManager: GameSocketManager
 
+    @Mock
+    private lateinit var preferenceRepository: PreferenceRepository
+
     private lateinit var viewModel: GameViewModel
     private val testDispatcher = StandardTestDispatcher()
 
@@ -31,11 +37,13 @@ class GameViewModelAudioTest {
     fun setup() {
         MockitoAnnotations.openMocks(this)
         Dispatchers.setMain(testDispatcher)
-        
+        `when`(preferenceRepository.userPreferencesFlow).thenReturn(flowOf(UserPreferences()))
+
         viewModel = GameViewModel(
             savedStateHandle = SavedStateHandle(),
             socketManager = socketManager,
-            soundManager = soundManager
+            soundManager = soundManager,
+            preferenceRepository = preferenceRepository
         )
     }
 
