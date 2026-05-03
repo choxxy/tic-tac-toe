@@ -21,10 +21,10 @@ class PreferenceRepository @Inject constructor(
         val NAME = stringPreferencesKey("user_name")
         val RANK = stringPreferencesKey("user_rank")
         val WIN_RATE = floatPreferencesKey("win_rate")
-        val SOUND_ENABLED = booleanPreferencesKey("sound_enabled")
-        val HAPTICS_ENABLED = booleanPreferencesKey("haptics_enabled")
-        val DARK_MODE_ENABLED = booleanPreferencesKey("dark_mode_enabled")
         val PROFILE_PICTURE_PATH = stringPreferencesKey("profile_picture_path")
+        // Cumulative counters used to compute win rate and rank across all sessions.
+        val TOTAL_WINS = intPreferencesKey("total_wins")
+        val TOTAL_GAMES = intPreferencesKey("total_games")
         }
 
         val userPreferencesFlow: Flow<UserPreferences> = dataStore.data
@@ -40,9 +40,6 @@ class PreferenceRepository @Inject constructor(
                 name = preferences[PreferencesKeys.NAME] ?: "Player 1",
                 rank = preferences[PreferencesKeys.RANK] ?: "Novice",
                 winRate = preferences[PreferencesKeys.WIN_RATE] ?: 0f,
-                soundEnabled = preferences[PreferencesKeys.SOUND_ENABLED] ?: true,
-                hapticsEnabled = preferences[PreferencesKeys.HAPTICS_ENABLED] ?: true,
-                darkModeEnabled = preferences[PreferencesKeys.DARK_MODE_ENABLED] ?: false,
                 profilePicturePath = preferences[PreferencesKeys.PROFILE_PICTURE_PATH]
             )
         }
@@ -59,28 +56,48 @@ class PreferenceRepository @Inject constructor(
         }
         }
 
-    suspend fun updateSoundEnabled(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.SOUND_ENABLED] = enabled
-        }
-    }
-
-    suspend fun updateHapticsEnabled(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.HAPTICS_ENABLED] = enabled
-        }
-    }
-
-    suspend fun updateDarkModeEnabled(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.DARK_MODE_ENABLED] = enabled
-        }
-    }
-
     suspend fun updateStats(rank: String, winRate: Float) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.RANK] = rank
             preferences[PreferencesKeys.WIN_RATE] = winRate
+        }
+    }
+
+    /**
+     * Records the outcome of a completed game and updates the player's win rate and rank.
+     *
+     * Increments the cumulative game counter and, if [won] is true, the win counter.
+     * Win rate is recomputed as totalWins / totalGames. Rank is derived from win rate,
+     * but requires at least 5 games before advancing past "Novice" to avoid early inflation.
+     *
+     * Rank thresholds:
+     *   < 5 games         → Novice
+     *   ≥ 90% win rate    → Master
+     *   ≥ 75%             → Expert
+     *   ≥ 60%             → Skilled
+     *   ≥ 45%             → Intermediate
+     *   ≥ 30%             → Beginner
+     *   < 30%             → Novice
+     */
+    suspend fun recordGameResult(won: Boolean) {
+        dataStore.edit { preferences ->
+            val totalGames = (preferences[PreferencesKeys.TOTAL_GAMES] ?: 0) + 1
+            val totalWins = (preferences[PreferencesKeys.TOTAL_WINS] ?: 0) + (if (won) 1 else 0)
+            preferences[PreferencesKeys.TOTAL_GAMES] = totalGames
+            preferences[PreferencesKeys.TOTAL_WINS] = totalWins
+
+            val winRate = totalWins.toFloat() / totalGames
+            val rank = when {
+                totalGames < 5 -> "Novice"
+                winRate >= 0.90f -> "Master"
+                winRate >= 0.75f -> "Expert"
+                winRate >= 0.60f -> "Skilled"
+                winRate >= 0.45f -> "Intermediate"
+                winRate >= 0.30f -> "Beginner"
+                else -> "Novice"
+            }
+            preferences[PreferencesKeys.WIN_RATE] = winRate
+            preferences[PreferencesKeys.RANK] = rank
         }
     }
 }

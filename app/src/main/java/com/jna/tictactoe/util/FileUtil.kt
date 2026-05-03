@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-fun Context.createTempUri(): Uri {
+fun Context.createImageTempUri(): Uri {
     val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
     val storageDir: File? = getExternalFilesDir("temp")
     val file = File.createTempFile(

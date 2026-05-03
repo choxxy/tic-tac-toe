@@ -19,7 +19,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.ElectricBolt
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,6 +36,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -45,6 +46,7 @@ import coil.compose.AsyncImage
 import com.jna.tictactoe.R
 import com.jna.tictactoe.data.UserPreferences
 import com.jna.tictactoe.game.model.Difficulty
+import com.jna.tictactoe.ui.component.BannerAd
 import com.jna.tictactoe.ui.theme.TictactoeTheme
 import com.jna.tictactoe.ui.theme.ZenithOnBackground
 import com.jna.tictactoe.ui.theme.ZenithOnPrimaryContainer
@@ -55,8 +57,6 @@ import com.jna.tictactoe.ui.theme.ZenithSurface
 import com.jna.tictactoe.ui.theme.ZenithSurfaceContainerHigh
 import com.jna.tictactoe.ui.theme.ZenithSurfaceContainerLow
 import com.jna.tictactoe.ui.theme.ZenithSurfaceContainerLowest
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.layout.ContentScale
 
 /**
  * The primary entry point for the application, displaying game mode options and player profile.
@@ -66,7 +66,6 @@ import androidx.compose.ui.layout.ContentScale
  * @param onVsLocal Callback when "Local" (Pass and Play) is selected.
  * @param onVsLan Callback when "Wi-Fi / LAN" is selected.
  * @param onAbout Callback when "About" is selected.
- * @param onSettings Callback when "Settings" is selected.
  * @param onProfile Callback when the profile card is selected.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,7 +76,6 @@ fun MainMenuScreen(
     onVsLocal: () -> Unit,
     onVsLan: () -> Unit,
     onAbout: () -> Unit,
-    onSettings: () -> Unit,
     onProfile: () -> Unit
 ) {
     var showDifficultyDialog by remember { mutableStateOf(false) }
@@ -97,10 +95,18 @@ fun MainMenuScreen(
                             .size(28.dp)
                             .clickable { }
                     )
+                },
+                actions = {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "About",
+                        tint = ZenithOnBackground,
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clickable(onClick = onAbout)
+                    )
                 }
             )
-            //TopNavigationBar(onAbout = onAbout, onSettings = onSettings)
-
         }
     ) { paddingValues ->
         Box(
@@ -115,7 +121,7 @@ fun MainMenuScreen(
                     .padding(horizontal = 24.dp)
             ) {
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
                 // Primary Card: VS CPU
                 GameModeCardLarge(
@@ -158,7 +164,12 @@ fun MainMenuScreen(
                     onClick = onProfile
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+
+                BannerAd(
+                    modifier = Modifier.padding(top = 8.dp),
+                    "ca-app-pub-6424626033677167/1956932730"
+                )
             }
 
             if (showDifficultyDialog) {
@@ -170,61 +181,8 @@ fun MainMenuScreen(
                     }
                 )
             }
-        }
-    }
-}
 
-/**
- * Displays the top app bar with app title and navigation actions.
- */
-@Composable
-private fun TopNavigationBar(
-    onAbout: () -> Unit,
-    onSettings: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Icon(
-            imageVector = Icons.Default.GridView,
-            contentDescription = "Menu",
-            tint = ZenithOnBackground,
-            modifier = Modifier
-                .size(28.dp)
-                .clickable { }
-        )
 
-        Text(
-            text = "TIC TAC TOE",
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.05.sp
-            ),
-            color = ZenithOnBackground
-        )
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription = "About",
-                tint = ZenithOnBackground,
-                modifier = Modifier
-                    .size(28.dp)
-                    .clickable(onClick = onAbout)
-            )
-            Spacer(modifier = Modifier.width(20.dp))
-            Icon(
-                imageVector = Icons.Default.Settings,
-                contentDescription = "Settings",
-                tint = ZenithOnBackground,
-                modifier = Modifier
-                    .size(28.dp)
-                    .clickable(onClick = onSettings)
-            )
         }
     }
 }
@@ -469,7 +427,6 @@ fun MainMenuScreenPreview() {
             onVsLocal = {},
             onVsLan = {},
             onAbout = {},
-            onSettings = {},
             onProfile = {})
     }
 }

@@ -45,12 +45,6 @@ data class Game(
 object About
 
 /**
- * Route for the Settings screen.
- */
-@Serializable
-object Settings
-
-/**
  * Route for the Player Profile screen.
  */
 @Serializable

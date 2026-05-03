@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__gemini__edit_image",
+      "Bash(mkdir -p /Users/choxxy/Projects/tictactoe/screenshots/01-play-friends-wifi /Users/choxxy/Projects/tictactoe/screenshots/02-challenge-unbeatable-ai /Users/choxxy/Projects/tictactoe/screenshots/03-pass-and-play-family)",
+      "Bash(python3 __TRACKED_VAR__/compose.py --bg '#005BC1' --verb PLAY --desc 'FRIENDS OVER LOCAL WI-FI' --screenshot /Users/choxxy/Projects/tictactoe/screen-shots/Screenshot_20260402_150213.png --output /Users/choxxy/Projects/tictactoe/screenshots/01-play-friends-wifi/scaffold.png)",
+      "Bash(python3 __TRACKED_VAR__/compose.py --bg '#005BC1' --verb CHALLENGE --desc 'AN UNBEATABLE AI' --screenshot /Users/choxxy/Projects/tictactoe/screen-shots/Screenshot_20260402_132755.png --output /Users/choxxy/Projects/tictactoe/screenshots/02-challenge-unbeatable-ai/scaffold.png)",
+      "Bash(python3 __TRACKED_VAR__/compose.py --bg '#005BC1' --verb 'PASS AND PLAY' --desc 'WITH FAMILY' --screenshot /Users/choxxy/Projects/tictactoe/screen-shots/Screenshot_20260403_100040.png --output /Users/choxxy/Projects/tictactoe/screenshots/03-pass-and-play-family/scaffold.png)",
+      "Bash(mkdir -p /Users/choxxy/Projects/tictactoe/screenshots/final)",
+      "Bash(cp /Users/choxxy/Projects/tictactoe/screenshots/01-play-friends-wifi/v5-resized.jpg /Users/choxxy/Projects/tictactoe/screenshots/final/01-play-friends-wifi.jpg)",
+      "Bash(python3:*)",
+      "Bash(grep -n \"versionName\\\\|versionCode\\\\|copyright\\\\|year\" /Users/choxxy/Projects/tictactoe/app/build.gradle* /Users/choxxy/Projects/tictactoe/app/build.gradle.kts)",
+      "Bash(grep:*)",
+      "WebFetch(domain:github.com)",
+      "mcp__planka__planka_manage_lists",
+      "mcp__planka__planka_get_board",
+      "mcp__planka__planka_create_card",
+      "Bash(./gradlew test:*)",
+      "Bash(node:*)",
+      "Bash(ls -la /Users/choxxy/Projects/tictactoe/.planning/phases/09-profile-picture/*VERIFICATION.md)",
+      "mcp__planka__planka_move_card",
+      "mcp__planka__planka_update_task"
+    ]
+  }
+}

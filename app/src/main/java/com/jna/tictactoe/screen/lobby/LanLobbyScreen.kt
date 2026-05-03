@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jna.tictactoe.ui.component.BannerAd
 import com.jna.tictactoe.ui.theme.*
 
 /**
@@ -172,8 +173,13 @@ fun LanLobbyScreen(
                     )
                 }
             }
-            
-            Spacer(modifier = Modifier.height(24.dp))
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            BannerAd(
+                modifier = Modifier.padding(top = 8.dp),
+                "ca-app-pub-6424626033677167/3717481820"
+            )
         }
     }
 }

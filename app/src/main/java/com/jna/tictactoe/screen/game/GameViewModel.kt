@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.jna.tictactoe.audio.SoundManager
+import com.jna.tictactoe.data.PreferenceRepository
 import com.jna.tictactoe.game.CpuPlayer
 import com.jna.tictactoe.game.GameEngine
 import com.jna.tictactoe.game.model.*
@@ -16,6 +17,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,7 +32,8 @@ import kotlin.random.Random
 class GameViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val socketManager: GameSocketManager,
-    private val soundManager: SoundManager
+    private val soundManager: SoundManager,
+    private val preferenceRepository: PreferenceRepository
 ) : ViewModel() {
 
     // Retrieve navigation arguments (GameMode and Difficulty)
@@ -53,7 +56,8 @@ class GameViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(
         GameUiState(
             isHost = args.isHost,
-            peerName = args.peerName
+            peerName = args.peerName,
+            difficulty = args.difficulty
         )
     )
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
@@ -65,6 +69,10 @@ class GameViewModel @Inject constructor(
 
     init {
         soundManager.loadSounds()
+        viewModelScope.launch {
+            val name = preferenceRepository.userPreferencesFlow.first().name
+            _uiState.update { it.copy(localPlayerName = name) }
+        }
     }
 
     override fun onCleared() {
@@ -161,7 +169,8 @@ class GameViewModel @Inject constructor(
                 isReconnecting = false, 
                 reconnectCountdown = null,
                 gameState = it.gameState.copy(mode = GameMode.VS_CPU),
-                peerName = "CPU (Easy)"
+                peerName = "CPU (Easy)",
+                difficulty = Difficulty.EASY
             ) 
         }
         args = args.copy(mode = GameMode.VS_CPU, difficulty = Difficulty.EASY)
@@ -177,6 +186,13 @@ class GameViewModel @Inject constructor(
      */
     fun initGame(game: Game) {
         args = game
+        _uiState.update { 
+            it.copy(
+                difficulty = game.difficulty,
+                isHost = game.isHost,
+                peerName = game.peerName
+            ) 
+        }
         if (game.mode == GameMode.VS_LAN) {
             observeNetworkMessages()
             startHeartbeat()
@@ -270,12 +286,13 @@ class GameViewModel @Inject constructor(
      * Updates the UI state with the new game engine state and increments scores on game end.
      */
     private fun updateStateAfterMove(newGameState: GameState) {
+        val previousPhase = _uiState.value.gameState.phase
         _uiState.update { currentState ->
             var updatedXWins = currentState.xWins
             var updatedOWins = currentState.oWins
             var updatedDraws = currentState.draws
 
-            if (newGameState.phase != currentState.gameState.phase) {
+            if (newGameState.phase != previousPhase) {
                 if (newGameState.phase == GamePhase.WIN) {
                     // If it's WIN, currentTurn is the winner in GameEngine.applyMove
                     soundManager.playWin()
@@ -293,6 +310,19 @@ class GameViewModel @Inject constructor(
                 oWins = updatedOWins,
                 draws = updatedDraws
             )
+        }
+
+        // Persist win rate and rank after every VS_CPU or VS_LAN game.
+        // VS_HUMAN_LOCAL is excluded because both sides are local players — there is no
+        // single "local player" to attribute the result to.
+        // In VS_LAN the host plays as X and the guest plays as O, so localPlayer is
+        // derived from isHost to correctly identify whose result this is.
+        if (newGameState.phase != previousPhase && args.mode != GameMode.VS_HUMAN_LOCAL) {
+            val localPlayer = if (args.isHost) Player.X else Player.O
+            val won = newGameState.phase == GamePhase.WIN && newGameState.currentTurn == localPlayer
+            viewModelScope.launch {
+                preferenceRepository.recordGameResult(won)
+            }
         }
     }
 

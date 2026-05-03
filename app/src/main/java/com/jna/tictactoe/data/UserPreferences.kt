@@ -4,8 +4,5 @@ data class UserPreferences(
     val name: String = "Player 1",
     val rank: String = "Novice",
     val winRate: Float = 0f,
-    val soundEnabled: Boolean = true,
-    val hapticsEnabled: Boolean = true,
-    val darkModeEnabled: Boolean = false,
     val profilePicturePath: String? = null
 )

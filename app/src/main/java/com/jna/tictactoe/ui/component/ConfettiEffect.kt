@@ -1,9 +1,15 @@
 package com.jna.tictactoe.ui.component
 
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -12,7 +18,9 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import com.jna.tictactoe.ui.theme.*
+import com.jna.tictactoe.ui.theme.ZenithPrimary
+import com.jna.tictactoe.ui.theme.ZenithSecondary
+import com.jna.tictactoe.ui.theme.ZenithTertiary
 import kotlinx.coroutines.isActive
 import kotlin.random.Random
 
@@ -46,7 +54,7 @@ fun ConfettiEffect(
         repeat(100) {
             particles.add(createParticle(screenWidthPx, colors))
         }
-        
+
         val startTime = System.currentTimeMillis()
         while (effectActive && isActive) {
             withFrameMillis { frameTime ->
@@ -114,7 +122,7 @@ private class ConfettiParticle(
         vy += gravity
         vx *= airResistance
         rotation += rotationSpeed
-        
+
         // Fade out as it falls
         if (y > 1500f) {
             alpha = (alpha - 0.02f).coerceAtLeast(0f)

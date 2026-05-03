@@ -119,19 +119,19 @@ fun DifficultyDialog(
                         ) {
                             DifficultyOption(
                                 title = "Easy",
-                                description = "AI makes some random moves.",
+                                description = "Plays casually with simple moves. Great for beginners.",
                                 isSelected = selectedDifficulty == Difficulty.EASY,
                                 onClick = { selectedDifficulty = Difficulty.EASY }
                             )
                             DifficultyOption(
                                 title = "Medium",
-                                description = "AI plays strategically.",
+                                description = "Mixes strategy and mistakes. A balanced challenge.",
                                 isSelected = selectedDifficulty == Difficulty.MEDIUM,
                                 onClick = { selectedDifficulty = Difficulty.MEDIUM }
                             )
                             DifficultyOption(
                                 title = "Hard",
-                                description = "Impossible to beat.",
+                                description = "Impossible to beat. Can you beat it?",
                                 isSelected = selectedDifficulty == Difficulty.HARD,
                                 onClick = { selectedDifficulty = Difficulty.HARD }
                             )

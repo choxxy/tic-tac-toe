@@ -16,6 +16,32 @@
 # debugging stack traces.
 #-keepattributes SourceFile,LineNumberTable
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# For Google Mobile Ads SDK
+-keep public class com.google.android.gms.ads.** {
+   public *;
+}
+
+# For Google Play Services
+-keep public class com.google.android.gms.common.internal.safeparcel.SafeParcelable {
+   public static final *** NULL;
+}
+
+-keepnames class * implements android.os.Parcelable {
+   public static final *** CREATOR;
+}
+
+-keep @interface com.google.android.gms.common.annotation.KeepName
+-keepnames class * {
+   @com.google.android.gms.common.annotation.KeepName *;
+}
+
+-keepclassmembernames class * {
+   @com.google.android.gms.common.annotation.KeepName *;
+}
+
+-keep @interface com.google.android.gms.common.util.DynamiteApi
+-keep public class * {
+   @com.google.android.gms.common.util.DynamiteApi *;
+}
+
+-dontwarn com.google.android.gms.**

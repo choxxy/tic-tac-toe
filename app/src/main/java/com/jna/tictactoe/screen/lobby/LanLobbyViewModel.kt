@@ -4,6 +4,7 @@ import android.net.nsd.NsdServiceInfo
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jna.tictactoe.data.PreferenceRepository
 import com.jna.tictactoe.network.discovery.NsdDiscoveryManager
 import com.jna.tictactoe.network.discovery.NsdRegistrationEvent
 import com.jna.tictactoe.network.model.GameMessage
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -23,7 +25,7 @@ import javax.inject.Inject
 private const val TAG = "LanLobbyViewModel"
 
 data class LanLobbyUiState(
-    val playerName: String = "Player ${ (1000..9999).random() }",
+    val playerName: String = "Player 1",
     val isHosting: Boolean = false,
     val selectedTab: Int = 0, // 0: Host, 1: Join
     val discoveredHosts: List<NsdServiceInfo> = emptyList(),
@@ -39,7 +41,8 @@ sealed class LanLobbyEvent {
 @HiltViewModel
 class LanLobbyViewModel @Inject constructor(
     private val nsdDiscoveryManager: NsdDiscoveryManager,
-    val gameSocketManager: GameSocketManager
+    val gameSocketManager: GameSocketManager,
+    private val preferenceRepository: PreferenceRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(LanLobbyUiState())
     val uiState: StateFlow<LanLobbyUiState> = _uiState.asStateFlow()
@@ -53,6 +56,10 @@ class LanLobbyViewModel @Inject constructor(
     private var gameStarted = false
 
     init {
+        viewModelScope.launch {
+            val name = preferenceRepository.userPreferencesFlow.first().name
+            _uiState.update { it.copy(playerName = name) }
+        }
         startDiscovery()
         observeMessages()
     }

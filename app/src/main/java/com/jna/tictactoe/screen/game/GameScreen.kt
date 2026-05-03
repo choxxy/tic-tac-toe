@@ -55,6 +55,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
@@ -62,11 +63,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import android.app.Activity
 import com.jna.tictactoe.game.model.CellState
+import com.jna.tictactoe.game.model.Difficulty
 import com.jna.tictactoe.game.model.GameMode
 import com.jna.tictactoe.game.model.GamePhase
 import com.jna.tictactoe.game.model.Player
+import com.jna.tictactoe.ui.component.BannerAd
+import com.jna.tictactoe.ui.component.ConfettiEffect
 import com.jna.tictactoe.ui.component.ReconnectingOverlay
+import com.jna.tictactoe.util.AdManager
 import com.jna.tictactoe.ui.theme.ZenithOnBackground
 import com.jna.tictactoe.ui.theme.ZenithOnSurfaceVariant
 import com.jna.tictactoe.ui.theme.ZenithPrimary
@@ -95,6 +101,7 @@ fun GameScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showResultDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     // Logic to delay the result dialog and trigger confetti
     LaunchedEffect(uiState.gameState.phase) {
@@ -118,7 +125,11 @@ fun GameScreen(
                 .padding(horizontal = 24.dp)
         ) {
             // Top Bar
-            GameTopBar(onExit = onExit)
+            GameTopBar(
+                onExit = onExit,
+                difficulty = uiState.difficulty,
+                mode = uiState.gameState.mode
+            )
 
             Spacer(modifier = Modifier.height(40.dp))
 
@@ -129,10 +140,18 @@ fun GameScreen(
                 draws = uiState.draws,
                 peerName = uiState.peerName,
                 isHost = uiState.isHost,
-                mode = uiState.gameState.mode
+                mode = uiState.gameState.mode,
+                localPlayerName = uiState.localPlayerName
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+           /* BannerAd(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                adUnitId = "ca-app-pub-3940256099942544/9214589741"
+            )*/
 
             // Turn Indicator
             TurnIndicator(
@@ -165,8 +184,7 @@ fun GameScreen(
             // Bottom Actions (Optional, could be Quit/Reset if not in dialog)
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 48.dp),
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
                 TextButton(onClick = viewModel::resetGame) {
@@ -177,11 +195,14 @@ fun GameScreen(
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
         }
 
         // Confetti Effect on Win
         if (uiState.gameState.phase == GamePhase.WIN) {
-            com.jna.tictactoe.ui.component.ConfettiEffect()
+            ConfettiEffect()
         }
 
         // Result Dialog
@@ -191,7 +212,9 @@ fun GameScreen(
                 winner = if (uiState.gameState.phase == GamePhase.WIN) uiState.gameState.currentTurn else null,
                 onPlayAgain = {
                     showResultDialog = false
-                    viewModel.resetGame()
+                    AdManager.showInterstitialAd(context as Activity) {
+                        viewModel.resetGame()
+                    }
                 },
                 onNewMatch = {
                     showResultDialog = false
@@ -212,11 +235,15 @@ fun GameScreen(
 }
 
 @Composable
-private fun GameTopBar(onExit: () -> Unit) {
+private fun GameTopBar(
+    onExit: () -> Unit,
+    difficulty: Difficulty?,
+    mode: GameMode
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 56.dp),
+            .padding(top = 48.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onExit) {
@@ -227,14 +254,26 @@ private fun GameTopBar(onExit: () -> Unit) {
             )
         }
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = "MATCH SESSION",
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.1.sp
-            ),
-            color = ZenithOnSurfaceVariant
-        )
+        Column {
+            Text(
+                text = "MATCH SESSION",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.1.sp
+                ),
+                color = ZenithOnSurfaceVariant
+            )
+            if (mode == GameMode.VS_CPU && difficulty != null) {
+                Text(
+                    text = "CPU: ${difficulty.name}",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Medium,
+                        letterSpacing = 0.05.sp
+                    ),
+                    color = ZenithPrimary
+                )
+            }
+        }
     }
 }
 
@@ -245,7 +284,8 @@ private fun ScoreBoard(
     draws: Int,
     peerName: String?,
     isHost: Boolean,
-    mode: GameMode
+    mode: GameMode,
+    localPlayerName: String
 ) {
     Row(
         modifier = Modifier
@@ -257,11 +297,11 @@ private fun ScoreBoard(
         verticalAlignment = Alignment.CenterVertically
     ) {
         val labelX = if (mode == GameMode.VS_LAN) {
-            if (isHost) "YOU (X)" else peerName ?: "PEER (X)"
-        } else "PLAYER X"
+            if (isHost) localPlayerName else peerName ?: "PEER (X)"
+        } else localPlayerName
 
         val labelO = if (mode == GameMode.VS_LAN) {
-            if (!isHost) "YOU (O)" else peerName ?: "PEER (O)"
+            if (!isHost) localPlayerName else peerName ?: "PEER (O)"
         } else "PLAYER O"
 
         ScoreItem(label = labelX, score = xWins, color = ZenithPrimary)

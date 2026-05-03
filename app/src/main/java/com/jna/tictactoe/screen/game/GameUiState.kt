@@ -1,5 +1,6 @@
 package com.jna.tictactoe.screen.game
 
+import com.jna.tictactoe.game.model.Difficulty
 import com.jna.tictactoe.game.model.GameMode
 import com.jna.tictactoe.game.model.GameState
 import com.jna.tictactoe.game.model.Player
@@ -14,6 +15,7 @@ import com.jna.tictactoe.game.model.Player
  * @property isThinking True if the AI is currently processing its move.
  * @property isHost True if this player is the host in LAN mode.
  * @property peerName The name of the opponent in LAN mode.
+ * @property difficulty The selected difficulty level in VS_CPU mode.
  */
 data class GameUiState(
     val gameState: GameState = GameState(),
@@ -24,7 +26,9 @@ data class GameUiState(
     val isHost: Boolean = true,
     val peerName: String? = null,
     val isReconnecting: Boolean = false,
-    val reconnectCountdown: Int? = null
+    val reconnectCountdown: Int? = null,
+    val difficulty: Difficulty? = null,
+    val localPlayerName: String = "You"
 ) {
     /**
      * True if it's currently the opponent's turn in a LAN game.

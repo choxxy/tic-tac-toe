@@ -1,6 +1,7 @@
 package com.jna.tictactoe.screen.splash
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,11 +29,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.jna.tictactoe.R
 import com.jna.tictactoe.ui.theme.TictactoeTheme
 import com.jna.tictactoe.ui.theme.ZenithOnBackground as OnBackgroundColor
 import com.jna.tictactoe.ui.theme.ZenithOnSurfaceVariant as OnSurfaceVariantColor
@@ -129,9 +132,10 @@ private fun LogoCard() {
                 .background(SurfaceContainerLowest),
             contentAlignment = Alignment.Center
         ) {
-            Canvas(modifier = Modifier.size(80.dp)) {
-                drawZenithIcon()
-            }
+            Image(
+                painter = painterResource(id = R.drawable.ic_logo),
+                contentDescription = "logo",
+            )
         }
 
         // Blue accent dot with white ring, anchored to top-right corner
@@ -223,7 +227,7 @@ private fun BrandIdentity() {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "ZENITH GRID",
+            text = "TIC TAC TOE",
             color = OnBackgroundColor,
             fontSize = 20.sp,
             fontWeight = FontWeight.Light,
