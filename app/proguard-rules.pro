@@ -45,3 +45,21 @@
 }
 
 -dontwarn com.google.android.gms.**
+
+# WorkManager rules
+-keep class * extends androidx.work.ListenableWorker {
+    <init>(...);
+}
+
+# WorkManager internal Room database implementation
+-keep class androidx.work.impl.WorkDatabase_Impl { *; }
+
+# Room-related components used by WorkManager
+-keep class * extends androidx.room.RoomDatabase { *; }
+-keep class * extends androidx.room.Entity
+-keep class * extends androidx.room.Dao
+
+# WorkManager internal classes used via reflection
+-keep class androidx.work.impl.background.systemalarm.RescheduleReceiver { *; }
+-keep class androidx.work.impl.background.systemjob.SystemJobService { *; }
+-keep class androidx.work.impl.diagnostics.DiagnosticsReceiver { *; }

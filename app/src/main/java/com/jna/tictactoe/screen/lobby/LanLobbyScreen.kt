@@ -19,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -139,10 +140,10 @@ fun LanLobbyScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Content based on tab
-            Box(modifier = Modifier.weight(1f)) {
+            Box(modifier = Modifier.height(IntrinsicSize.Max)) {
                 when (uiState.selectedTab) {
                     0 -> HostContent(
                         isHosting = uiState.isHosting,
@@ -251,11 +252,11 @@ private fun HostContent(
             )
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = onHostClick,
-            modifier = Modifier.fillMaxWidth().height(64.dp),
+            modifier = Modifier.fillMaxWidth().height(56.dp),
             shape = RoundedCornerShape(20.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = if (isHosting) ZenithSurfaceContainerHigh else ZenithPrimary,
@@ -269,6 +270,9 @@ private fun HostContent(
 
             )
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
     }
 }
 
