@@ -28,7 +28,7 @@ firebaseCrashlytics = "20.0.6"
 googleFirebaseCrashlytics = "3.0.7"
 workRuntimeKtx = "2.11.2"
 roomRuntime = "2.8.4"
-foundation = "1.11.1"
+foundation = "1.12.0"
 
 [libraries]
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
