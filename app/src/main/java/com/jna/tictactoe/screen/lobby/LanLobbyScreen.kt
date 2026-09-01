@@ -28,6 +28,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jna.tictactoe.ui.component.BannerAd
 import com.jna.tictactoe.ui.theme.*
 
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.jna.tictactoe.ui.theme.LocalAppDimensions
+
 /**
  * Screen for Wi-Fi / LAN game discovery and hosting.
  */
@@ -35,11 +39,14 @@ import com.jna.tictactoe.ui.theme.*
 @Composable
 fun LanLobbyScreen(
     viewModel: LanLobbyViewModel,
+    windowSizeClass: WindowSizeClass? = null,
     onBack: () -> Unit,
     onGameStarted: (String, Boolean) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val event by viewModel.events.collectAsStateWithLifecycle(initialValue = null)
+    val dimensions = LocalAppDimensions.current
+    val isExpanded = windowSizeClass?.widthSizeClass == WindowWidthSizeClass.Expanded
 
     LaunchedEffect(event) {
         if (event is LanLobbyEvent.GameStarted) {
@@ -78,9 +85,9 @@ fun LanLobbyScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = dimensions.horizontalPadding)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(dimensions.verticalPadding))
 
             // Player Name Input
             OutlinedTextField(
@@ -89,7 +96,7 @@ fun LanLobbyScreen(
                 label = { Text("Your Player Name") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(dimensions.cornerRadiusMedium),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = ZenithPrimary,
                     unfocusedBorderColor = ZenithSurfaceContainerHigh,
@@ -101,7 +108,7 @@ fun LanLobbyScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(dimensions.cardSpacing))
 
             // Tabs
             TabRow(
@@ -140,14 +147,15 @@ fun LanLobbyScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(dimensions.cardSpacing))
 
             // Content based on tab
-            Box(modifier = Modifier.height(IntrinsicSize.Max)) {
+            Box(modifier = Modifier.defaultMinSize(minHeight = 180.dp).weight(1f)) {
                 when (uiState.selectedTab) {
                     0 -> HostContent(
                         isHosting = uiState.isHosting,
                         isWaiting = uiState.isWaitingForOpponent,
+                        dimensions = dimensions,
                         onHostClick = { 
                             if (uiState.isHosting) viewModel.stopHosting() else viewModel.startHosting() 
                         }
@@ -155,6 +163,7 @@ fun LanLobbyScreen(
                     1 -> JoinContent(
                         hosts = uiState.discoveredHosts,
                         isConnecting = uiState.isConnecting,
+                        dimensions = dimensions,
                         onJoinClick = { viewModel.connectToHost(it) }
                     )
                 }
@@ -163,7 +172,7 @@ fun LanLobbyScreen(
             uiState.error?.let {
                 Surface(
                     color = MaterialTheme.colorScheme.errorContainer,
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedCornerShape(dimensions.cornerRadiusMedium),
                     modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
                 ) {
                     Text(
@@ -175,10 +184,8 @@ fun LanLobbyScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
-
             BannerAd(
-                modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier.padding(top = 8.dp, bottom = dimensions.verticalPadding),
                 "ca-app-pub-6424626033677167/3717481820"
             )
         }
@@ -189,6 +196,7 @@ fun LanLobbyScreen(
 private fun HostContent(
     isHosting: Boolean,
     isWaiting: Boolean,
+    dimensions: AppDimensions,
     onHostClick: () -> Unit
 ) {
     Column(
@@ -205,11 +213,11 @@ private fun HostContent(
             ) {
                 CircularProgressIndicator(
                     color = ZenithPrimary,
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier.size(dimensions.iconSizeLarge),
                     strokeWidth = 4.dp
                 )
             }
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(dimensions.cardSpacing * 2))
             Text(
                 "Waiting for opponent...",
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
@@ -237,7 +245,7 @@ private fun HostContent(
                     tint = ZenithOnSurfaceVariant
                 )
             }
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(dimensions.cardSpacing * 2))
             Text(
                 "Host a New Game",
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
@@ -252,12 +260,12 @@ private fun HostContent(
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(dimensions.cardSpacing))
 
         Button(
             onClick = onHostClick,
             modifier = Modifier.fillMaxWidth().height(56.dp),
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedCornerShape(dimensions.cornerRadiusMedium),
             colors = ButtonDefaults.buttonColors(
                 containerColor = if (isHosting) ZenithSurfaceContainerHigh else ZenithPrimary,
                 contentColor = if (isHosting) ZenithOnBackground else ZenithOnPrimaryContainer
@@ -270,9 +278,6 @@ private fun HostContent(
 
             )
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
     }
 }
 
@@ -280,6 +285,7 @@ private fun HostContent(
 private fun JoinContent(
     hosts: List<NsdServiceInfo>,
     isConnecting: Boolean,
+    dimensions: AppDimensions,
     onJoinClick: (NsdServiceInfo) -> Unit
 ) {
     if (hosts.isEmpty()) {
@@ -291,10 +297,10 @@ private fun JoinContent(
             Icon(
                 Icons.Default.Search,
                 contentDescription = null,
-                modifier = Modifier.size(64.dp),
+                modifier = Modifier.size(dimensions.iconSizeLarge + 16.dp),
                 tint = ZenithOnSurfaceVariant.copy(alpha = 0.3f)
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(dimensions.cardSpacing))
             Text(
                 "Searching for games...",
                 style = MaterialTheme.typography.titleMedium,
@@ -308,7 +314,7 @@ private fun JoinContent(
         }
     } else {
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(dimensions.cardSpacing),
             modifier = Modifier.fillMaxSize()
         ) {
             item {
@@ -322,7 +328,7 @@ private fun JoinContent(
                 )
             }
             items(hosts) { host ->
-                HostItem(host, isConnecting, onClick = { onJoinClick(host) })
+                HostItem(host, isConnecting, dimensions, onClick = { onJoinClick(host) })
             }
         }
     }
@@ -332,20 +338,21 @@ private fun JoinContent(
 private fun HostItem(
     host: NsdServiceInfo,
     isConnecting: Boolean,
+    dimensions: AppDimensions,
     onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(dimensions.cornerRadiusMedium))
             .background(ZenithSurfaceContainerLow)
             .clickable(enabled = !isConnecting, onClick = onClick)
-            .padding(20.dp),
+            .padding(dimensions.cardSpacing),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(48.dp)
+                .size(dimensions.iconSizeLarge)
                 .clip(CircleShape)
                 .background(ZenithPrimaryContainer),
             contentAlignment = Alignment.Center
@@ -356,7 +363,7 @@ private fun HostItem(
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
             )
         }
-        Spacer(modifier = Modifier.width(20.dp))
+        Spacer(modifier = Modifier.width(dimensions.cardSpacing))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = host.serviceName,
@@ -377,7 +384,7 @@ private fun HostItem(
             )
         } else {
             Icon(
-                imageVector = Icons.Outlined.ArrowBack, // Using back arrow flipped if needed, but let's just use a simple icon or nothing
+                imageVector = Icons.Outlined.ArrowBack, 
                 contentDescription = null,
                 tint = ZenithOnSurfaceVariant.copy(alpha = 0.5f),
                 modifier = Modifier.size(20.dp).graphicsLayer { rotationZ = 180f }

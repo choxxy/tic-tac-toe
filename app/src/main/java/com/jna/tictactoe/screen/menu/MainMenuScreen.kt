@@ -13,8 +13,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Info
@@ -58,10 +62,15 @@ import com.jna.tictactoe.ui.theme.ZenithSurfaceContainerHigh
 import com.jna.tictactoe.ui.theme.ZenithSurfaceContainerLow
 import com.jna.tictactoe.ui.theme.ZenithSurfaceContainerLowest
 
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.jna.tictactoe.ui.theme.LocalAppDimensions
+
 /**
  * The primary entry point for the application, displaying game mode options and player profile.
- * 
+ *
  * @param userPreferences The current user preferences for display.
+ * @param windowSizeClass The current window size class for responsiveness.
  * @param onVsCpu Callback when "Play vs CPU" is selected.
  * @param onVsLocal Callback when "Local" (Pass and Play) is selected.
  * @param onVsLan Callback when "Wi-Fi / LAN" is selected.
@@ -72,12 +81,15 @@ import com.jna.tictactoe.ui.theme.ZenithSurfaceContainerLowest
 @Composable
 fun MainMenuScreen(
     userPreferences: UserPreferences = UserPreferences(),
+    windowSizeClass: WindowSizeClass? = null,
     onVsCpu: (Difficulty) -> Unit,
     onVsLocal: () -> Unit,
     onVsLan: () -> Unit,
     onAbout: () -> Unit,
     onProfile: () -> Unit
 ) {
+    val dimensions = LocalAppDimensions.current
+    val isExpanded = windowSizeClass?.widthSizeClass == WindowWidthSizeClass.Expanded
     var showDifficultyDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -115,61 +127,129 @@ fun MainMenuScreen(
                 .padding(paddingValues)
                 .background(ZenithSurface)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 24.dp)
-            ) {
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // Primary Card: VS CPU
-                GameModeCardLarge(
-                    title = "Play vs CPU",
-                    subtitle = "Challenge our adaptive neural engine.",
-                    onClick = { showDifficultyDialog = true }
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Secondary Cards: Local & LAN
+            if (isExpanded) {
+                // Two-pane layout for tablets/desktops
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = dimensions.horizontalPadding),
+                    horizontalArrangement = Arrangement.spacedBy(dimensions.cardSpacing)
                 ) {
-                    GameModeCardSmall(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Outlined.Group,
-                        title = "Local",
-                        subtitle = "Two players, one\ndevice.",
-                        onClick = onVsLocal
-                    )
-                    GameModeCardSmall(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Filled.Public,
-                        title = "Wi-Fi / LAN",
-                        subtitle = "Play over local\nnetwork.",
-                        onClick = onVsLan
-                    )
+                    Column(
+                        modifier = Modifier
+                            .weight(1.5f)
+                            .verticalScroll(rememberScrollState())
+                            .padding(vertical = dimensions.verticalPadding)
+                    ) {
+                        GameModeCardLarge(
+                            title = "Play vs CPU",
+                            subtitle = "Challenge our adaptive neural engine.",
+                            onClick = { showDifficultyDialog = true }
+                        )
+
+                        Spacer(modifier = Modifier.height(dimensions.cardSpacing))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(dimensions.cardSpacing)
+                        ) {
+                            GameModeCardSmall(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Outlined.Group,
+                                title = "Local",
+                                subtitle = "Two players, one device.",
+                                onClick = onVsLocal
+                            )
+                            GameModeCardSmall(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Filled.Public,
+                                title = "Wi-Fi / LAN",
+                                subtitle = "Play over local network.",
+                                onClick = onVsLan
+                            )
+                        }
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(vertical = dimensions.verticalPadding)
+                    ) {
+                        ProfileCard(
+                            name = userPreferences.name,
+                            rank = userPreferences.rank,
+                            winRate = "${(userPreferences.winRate * 100).toInt()}%",
+                            profilePicturePath = userPreferences.profilePicturePath,
+                            onClick = onProfile
+                        )
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        BannerAd(
+                            modifier = Modifier.padding(top = 16.dp),
+                            "ca-app-pub-6424626033677167/1956932730"
+                        )
+                    }
                 }
+            } else {
+                // Single-pane layout for phones
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = dimensions.horizontalPadding)
+                        .verticalScroll(rememberScrollState())
+                ) {
 
-                Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.height(dimensions.verticalPadding))
 
-                // Profile Card
-                ProfileCard(
-                    name = userPreferences.name,
-                    rank = userPreferences.rank,
-                    winRate = "${(userPreferences.winRate * 100).toInt()}%",
-                    profilePicturePath = userPreferences.profilePicturePath,
-                    onClick = onProfile
-                )
+                    // Primary Card: VS CPU
+                    GameModeCardLarge(
+                        title = "Play vs CPU",
+                        subtitle = "Challenge our adaptive neural engine.",
+                        onClick = { showDifficultyDialog = true }
+                    )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(dimensions.cardSpacing))
 
-                BannerAd(
-                    modifier = Modifier.padding(top = 8.dp),
-                    "ca-app-pub-6424626033677167/1956932730"
-                )
+                    // Secondary Cards: Local & LAN
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(dimensions.cardSpacing)
+                    ) {
+                        GameModeCardSmall(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Outlined.Group,
+                            title = "Local",
+                            subtitle = "Two players, one\ndevice.",
+                            onClick = onVsLocal
+                        )
+                        GameModeCardSmall(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Filled.Public,
+                            title = "Wi-Fi / LAN",
+                            subtitle = "Play over local\nnetwork.",
+                            onClick = onVsLan
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    // Profile Card
+                    ProfileCard(
+                        name = userPreferences.name,
+                        rank = userPreferences.rank,
+                        winRate = "${(userPreferences.winRate * 100).toInt()}%",
+                        profilePicturePath = userPreferences.profilePicturePath,
+                        onClick = onProfile
+                    )
+
+                    BannerAd(
+                        modifier = Modifier.padding(top = 16.dp),
+                        "ca-app-pub-6424626033677167/1956932730"
+                    )
+                    
+                    Spacer(modifier = Modifier.height(dimensions.verticalPadding))
+                }
             }
 
             if (showDifficultyDialog) {
@@ -181,8 +261,6 @@ fun MainMenuScreen(
                     }
                 )
             }
-
-
         }
     }
 }
@@ -221,7 +299,7 @@ private fun GameModeCardLarge(
                         modifier = Modifier.size(24.dp)
                     )
                 }
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     text = title,
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
@@ -314,11 +392,16 @@ private fun GameModeCardSmall(
                 modifier = Modifier.size(24.dp)
             )
         }
-        Spacer(modifier = Modifier.height(32.dp))
-        Text(
+        Spacer(modifier = Modifier.height(16.dp))
+        BasicText(
             text = title,
+            color = { ZenithOnBackground },
+            autoSize = TextAutoSize.StepBased(
+                maxFontSize = MaterialTheme.typography.titleLarge.fontSize,
+                minFontSize = 12.sp
+            ),
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-            color = ZenithOnBackground
+            maxLines = 1,
         )
         Text(
             text = subtitle,
@@ -418,9 +501,22 @@ private fun ProfileCard(
     }
 }
 
-@Preview(showBackground = true, widthDp = 390, heightDp = 844)
+@Preview(showBackground = true, device = "spec:width=411dp,height=891dp")
 @Composable
-fun MainMenuScreenPreview() {
+fun MainMenuScreenPhonePreview() {
+    TictactoeTheme {
+        MainMenuScreen(
+            onVsCpu = {},
+            onVsLocal = {},
+            onVsLan = {},
+            onAbout = {},
+            onProfile = {})
+    }
+}
+
+@Preview(showBackground = true, device = "spec:width=1280dp,height=800dp,orientation=landscape")
+@Composable
+fun MainMenuScreenTabletPreview() {
     TictactoeTheme {
         MainMenuScreen(
             onVsCpu = {},

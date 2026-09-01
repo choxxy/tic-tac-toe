@@ -64,6 +64,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import android.app.Activity
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import com.jna.tictactoe.game.model.CellState
 import com.jna.tictactoe.game.model.Difficulty
 import com.jna.tictactoe.game.model.GameMode
@@ -87,21 +89,29 @@ import com.jna.tictactoe.ui.theme.ZenithSurfaceContainerHighest
 import com.jna.tictactoe.ui.theme.ZenithSurfaceContainerLow
 import com.jna.tictactoe.ui.theme.ZenithSurfaceContainerLowest
 
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.jna.tictactoe.ui.theme.LocalAppDimensions
+
 /**
  * The Game screen where the actual match takes place.
  * Adheres to the "Architectural Serenity" design system with a no-line grid.
  *
  * @param onExit Callback to navigate back to the main menu.
  * @param viewModel The ViewModel for this screen, scoped for session persistence.
+ * @param windowSizeClass The current window size class for responsiveness.
  */
 @Composable
 fun GameScreen(
     onExit: () -> Unit,
-    viewModel: GameViewModel
+    viewModel: GameViewModel,
+    windowSizeClass: WindowSizeClass? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showResultDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val dimensions = LocalAppDimensions.current
+    val isExpanded = windowSizeClass?.widthSizeClass == WindowWidthSizeClass.Expanded
 
     // Logic to delay the result dialog and trigger confetti
     LaunchedEffect(uiState.gameState.phase) {
@@ -122,7 +132,8 @@ fun GameScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = dimensions.horizontalPadding)
+                .verticalScroll(rememberScrollState())
         ) {
             // Top Bar
             GameTopBar(
@@ -131,60 +142,106 @@ fun GameScreen(
                 mode = uiState.gameState.mode
             )
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(dimensions.verticalPadding))
 
-            // Score Board
-            ScoreBoard(
-                xWins = uiState.xWins,
-                oWins = uiState.oWins,
-                draws = uiState.draws,
-                peerName = uiState.peerName,
-                isHost = uiState.isHost,
-                mode = uiState.gameState.mode,
-                localPlayerName = uiState.localPlayerName
-            )
+            if (isExpanded) {
+                // Expanded layout: side-by-side
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(dimensions.cardSpacing),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // Score Board
+                        ScoreBoard(
+                            xWins = uiState.xWins,
+                            oWins = uiState.oWins,
+                            draws = uiState.draws,
+                            peerName = uiState.peerName,
+                            isHost = uiState.isHost,
+                            mode = uiState.gameState.mode,
+                            localPlayerName = uiState.localPlayerName
+                        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(dimensions.cardSpacing))
 
-           /* BannerAd(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                adUnitId = "ca-app-pub-3940256099942544/9214589741"
-            )*/
+                        // Turn Indicator
+                        TurnIndicator(
+                            currentTurn = uiState.gameState.currentTurn,
+                            isThinking = uiState.isThinking,
+                            isWaitingForPeerMove = uiState.isWaitingForPeerMove,
+                            peerName = uiState.peerName
+                        )
+                    }
 
-            // Turn Indicator
-            TurnIndicator(
-                currentTurn = uiState.gameState.currentTurn,
-                isThinking = uiState.isThinking,
-                isWaitingForPeerMove = uiState.isWaitingForPeerMove,
-                peerName = uiState.peerName
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Game Board
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(ZenithSurfaceContainerHigh)
-                    .padding(12.dp)
-            ) {
-                GameBoard(
-                    board = uiState.gameState.board,
-                    winLine = uiState.gameState.winLine,
-                    onCellClicked = viewModel::onCellClicked
+                    // Game Board
+                    Box(
+                        modifier = Modifier
+                            .weight(1.2f)
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(dimensions.cornerRadiusLarge))
+                            .background(ZenithSurfaceContainerHigh)
+                            .padding(dimensions.gridPadding)
+                    ) {
+                        GameBoard(
+                            board = uiState.gameState.board,
+                            winLine = uiState.gameState.winLine,
+                            onCellClicked = viewModel::onCellClicked
+                        )
+                    }
+                }
+            } else {
+                // Compact layout: vertical
+                // Score Board
+                ScoreBoard(
+                    xWins = uiState.xWins,
+                    oWins = uiState.oWins,
+                    draws = uiState.draws,
+                    peerName = uiState.peerName,
+                    isHost = uiState.isHost,
+                    mode = uiState.gameState.mode,
+                    localPlayerName = uiState.localPlayerName
                 )
+
+                Spacer(modifier = Modifier.height(dimensions.cardSpacing))
+
+                // Turn Indicator
+                TurnIndicator(
+                    currentTurn = uiState.gameState.currentTurn,
+                    isThinking = uiState.isThinking,
+                    isWaitingForPeerMove = uiState.isWaitingForPeerMove,
+                    peerName = uiState.peerName
+                )
+
+                Spacer(modifier = Modifier.height(dimensions.cardSpacing))
+
+                // Game Board
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .clip(RoundedCornerShape(dimensions.cornerRadiusLarge))
+                        .background(ZenithSurfaceContainerHigh)
+                        .padding(dimensions.gridPadding)
+                ) {
+                    GameBoard(
+                        board = uiState.gameState.board,
+                        winLine = uiState.gameState.winLine,
+                        onCellClicked = viewModel::onCellClicked
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Bottom Actions (Optional, could be Quit/Reset if not in dialog)
+            // Bottom Actions
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(vertical = dimensions.verticalPadding),
                 horizontalArrangement = Arrangement.Center
             ) {
                 TextButton(onClick = viewModel::resetGame) {
@@ -195,9 +252,6 @@ fun GameScreen(
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
         }
 
         // Confetti Effect on Win

@@ -43,15 +43,37 @@ import com.jna.tictactoe.ui.theme.ZenithSurface
 import com.jna.tictactoe.ui.theme.ZenithSurfaceContainerLow
 import java.util.Calendar
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.jna.tictactoe.ui.theme.LocalAppDimensions
+
 @Composable
 fun AboutScreen(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    windowSizeClass: WindowSizeClass? = null
 ) {
     val context = LocalContext.current
+    val dimensions = LocalAppDimensions.current
+    val isExpanded = windowSizeClass?.widthSizeClass == WindowWidthSizeClass.Expanded
+    
     val versionName = remember {
         context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0"
     }
     val copyrightYear = remember { Calendar.getInstance().get(Calendar.YEAR) }
+
+    val tutorials = listOf(
+        "OBJECTIVE" to "Be the first player to get 3 of your marks in a row — horizontally, vertically, or diagonally.",
+        "TAKING TURNS" to "Players alternate turns. On your turn, tap any empty cell on the 3×3 grid to place your mark (X or O). X always goes first.",
+        "WINNING" to "A player wins by filling any of these lines with their mark:\n\n• Any row\n• Any column\n• Either diagonal",
+        "DRAW" to "If all 9 cells are filled and no player has 3 in a row, the game ends in a draw.",
+        "GAME MODES" to "• Pass & Play — local friends.\n• vs AI — challenge the computer.\n• Local Wi-Fi — LAN matchmaking.",
+        "TIPS" to "• Control the center.\n• Watch the corners.\n• Block your opponent."
+    )
 
     Scaffold(
         topBar = {
@@ -84,17 +106,18 @@ fun AboutScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(24.dp),
+                .padding(horizontal = dimensions.horizontalPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(dimensions.verticalPadding))
+
             Image(
                 painter = painterResource(R.drawable.ic_logo),
                 contentDescription = "App Icon",
-                modifier = Modifier.size(72.dp)
+                modifier = Modifier.size(dimensions.iconSizeLarge + 8.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(dimensions.verticalPadding))
 
             Text(
                 text = "Tic-Tac-Toe",
@@ -108,64 +131,54 @@ fun AboutScreen(
                 color = ZenithOnSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(dimensions.verticalPadding))
 
-            TutorialSection(
-                title = "OBJECTIVE",
-                content = "Be the first player to get 3 of your marks in a row — horizontally, vertically, or diagonally."
-            )
+            if (isExpanded) {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(dimensions.cardSpacing),
+                    verticalArrangement = Arrangement.spacedBy(dimensions.cardSpacing)
+                ) {
+                    items(tutorials) { (title, content) ->
+                        TutorialSection(title = title, content = content)
+                    }
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    tutorials.forEach { (title, content) ->
+                        TutorialSection(title = title, content = content)
+                        Spacer(modifier = Modifier.height(dimensions.cardSpacing))
+                    }
+                    
+                    Text(
+                        text = "© $copyrightYear JNA Games",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = ZenithOutline,
+                        modifier = Modifier.padding(vertical = dimensions.verticalPadding)
+                    )
+                }
+            }
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            TutorialSection(
-                title = "TAKING TURNS",
-                content = "Players alternate turns. On your turn, tap any empty cell on the 3×3 grid to place your mark (X or O). X always goes first."
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            TutorialSection(
-                title = "WINNING",
-                content = "A player wins by filling any of these lines with their mark:\n\n• Any row (top, middle, or bottom)\n• Any column (left, center, or right)\n• Either diagonal"
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            TutorialSection(
-                title = "DRAW",
-                content = "If all 9 cells are filled and no player has 3 in a row, the game ends in a draw."
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            TutorialSection(
-                title = "GAME MODES",
-                content = "• Pass & Play — take turns on the same device with a friend or family member.\n\n• vs AI — challenge the computer. Choose Easy, Medium, or Hard difficulty.\n\n• Local Wi-Fi — play against a friend on the same network using LAN matchmaking."
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            TutorialSection(
-                title = "TIPS",
-                content = "• Control the center — the center cell gives you the most winning lines.\n\n• Watch the corners — corners are the next most powerful positions.\n\n• Block your opponent — if they have two in a row, place your mark in the third cell to block."
-            )
-
-            Spacer(modifier = Modifier.height(48.dp))
-
-            Text(
-                text = "© $copyrightYear JNA Games",
-                style = MaterialTheme.typography.labelSmall,
-                color = ZenithOutline
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
+            if (isExpanded) {
+                Text(
+                    text = "© $copyrightYear JNA Games",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = ZenithOutline,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
 
             BannerAd(
-                modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier.padding(top = 8.dp, bottom = dimensions.verticalPadding),
                 "ca-app-pub-6424626033677167/1624976429"
             )
         }
-
     }
 }
 

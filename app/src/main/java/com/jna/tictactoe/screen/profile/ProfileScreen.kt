@@ -62,57 +62,25 @@ import com.jna.tictactoe.ui.component.BannerAd
 import com.jna.tictactoe.util.createImageTempUri
 
 
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.jna.tictactoe.ui.theme.LocalAppDimensions
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun ProfileScreen(
     onBack: () -> Unit,
+    windowSizeClass: WindowSizeClass? = null,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val userPreferences by viewModel.userPreferences.collectAsState()
     var nameInput by remember(userPreferences.name) { mutableStateOf(userPreferences.name) }
+    val nameError by viewModel.nameError.collectAsState()
     val showDialog by viewModel.showImageSourceDialog.collectAsState()
     val context = LocalContext.current
     var tempUri by remember { mutableStateOf<Uri?>(null) }
-
-
-    val pickMedia =
-        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-            viewModel.onImageSelected(uri)
-        }
-    val cameraLauncher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.TakePicture()) { success ->
-            if (success) {
-                viewModel.onImageSelected(tempUri)
-            }
-        }
-
-    val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
-
-
-    if (showDialog) {
-        ImageSourceDialog(
-            onDismiss = { viewModel.onHideImageSourceDialog() },
-            onCameraClick = {
-                viewModel.onHideImageSourceDialog()
-                if (cameraPermissionState.status.isGranted) {
-                    val uri = context.createImageTempUri()
-                    tempUri = uri
-                    cameraLauncher.launch(uri)
-                } else {
-                    cameraPermissionState.launchPermissionRequest()
-                }
-            },
-            onGalleryClick = {
-                viewModel.onHideImageSourceDialog()
-                pickMedia.launch(
-                    androidx.activity.result.PickVisualMediaRequest(
-                        ActivityResultContracts.PickVisualMedia.ImageOnly
-                    )
-                )
-            }
-        )
-    }
-
+    val dimensions = LocalAppDimensions.current
+    val isExpanded = windowSizeClass?.widthSizeClass == WindowWidthSizeClass.Expanded
     Scaffold(
         topBar = {
             TopAppBar(
@@ -138,10 +106,10 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = dimensions.horizontalPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(dimensions.verticalPadding))
 
             // Avatar
             Box(
@@ -176,7 +144,7 @@ fun ProfileScreen(
             }
 
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(dimensions.verticalPadding))
 
             Text(
                 text = userPreferences.rank,
@@ -197,13 +165,23 @@ fun ProfileScreen(
                 textStyle = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                isError = nameError != null,
+                supportingText = {
+                    if (nameError != null) {
+                        Text(
+                            text = nameError!!,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
                 )
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(dimensions.cardSpacing * 2))
 
             // Stats Section
             Column(
@@ -211,7 +189,7 @@ fun ProfileScreen(
                     .fillMaxWidth()
                     .clip(MaterialTheme.shapes.large)
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-                    .padding(24.dp)
+                    .padding(dimensions.cardSpacing),
             ) {
                 Text(
                     text = "Statistics",
@@ -219,7 +197,7 @@ fun ProfileScreen(
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(dimensions.cardSpacing))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -236,7 +214,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             BannerAd(
-                modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier.padding(top = 8.dp, bottom = dimensions.verticalPadding),
                 "ca-app-pub-3940256099942544/9214589741"
             )
         }

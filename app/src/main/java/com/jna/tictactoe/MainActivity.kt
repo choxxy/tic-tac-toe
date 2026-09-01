@@ -4,10 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -29,7 +30,9 @@ import com.jna.tictactoe.screen.menu.MainMenuScreen
 import com.jna.tictactoe.screen.profile.ProfileScreen
 import com.jna.tictactoe.screen.profile.ProfileViewModel
 import com.jna.tictactoe.screen.splash.SplashScreen
-import com.jna.tictactoe.ui.component.BannerAd
+import com.jna.tictactoe.ui.theme.CompactDimensions
+import com.jna.tictactoe.ui.theme.ExpandedDimensions
+import com.jna.tictactoe.ui.theme.LocalAppDimensions
 import com.jna.tictactoe.ui.theme.TictactoeTheme
 import com.jna.tictactoe.util.AdManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -43,6 +46,7 @@ class MainActivity : ComponentActivity() {
     /**
      * Entry point for the activity, setting up the UI and navigation.
      */
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Set up the edge-to-edge display to use the full screen area
@@ -52,6 +56,14 @@ class MainActivity : ComponentActivity() {
         AdManager.loadInterstitialAd(this)
 
         setContent {
+            val windowSizeClass = calculateWindowSizeClass(this)
+            val dimensions = if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
+                ExpandedDimensions
+            } else {
+                CompactDimensions
+            }
+
+            CompositionLocalProvider(LocalAppDimensions provides dimensions) {
                 TictactoeTheme {
                     val navController = rememberNavController()
 
@@ -83,6 +95,7 @@ class MainActivity : ComponentActivity() {
 
                             MainMenuScreen(
                                 userPreferences = userPreferences,
+                                windowSizeClass = windowSizeClass,
                                 onVsCpu = { difficulty ->
                                     navController.navigate(
                                         Game(
@@ -108,13 +121,15 @@ class MainActivity : ComponentActivity() {
                         // About screen with app info and credits
                         composable<About> {
                             AboutScreen(
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
+                                windowSizeClass = windowSizeClass
                             )
                         }
                         // Profile screen for player name and stats
                         composable<Profile> {
                             ProfileScreen(
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
+                                windowSizeClass = windowSizeClass
                             )
                         }
                         // LAN Lobby for discovery and peer connection
@@ -122,6 +137,7 @@ class MainActivity : ComponentActivity() {
                             val lobbyViewModel: LanLobbyViewModel = hiltViewModel()
                             LanLobbyScreen(
                                 viewModel = lobbyViewModel,
+                                windowSizeClass = windowSizeClass,
                                 onBack = { navController.popBackStack() },
                                 onGameStarted = { peerName, isHost ->
                                     navController.navigate(
@@ -148,22 +164,14 @@ class MainActivity : ComponentActivity() {
 
                             GameScreen(
                                 viewModel = gameViewModel,
+                                windowSizeClass = windowSizeClass,
                                 onExit = {
                                     navController.popBackStack()
                                 }
                             )
                         }
-
-                        // About screen with app info and credits
-                        composable<About> {
-                            AboutScreen(
-                                onBack = { navController.popBackStack() }
-                            )
-                        }
                     }
-
-
-
+                }
             }
         }
     }

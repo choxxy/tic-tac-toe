@@ -27,6 +27,9 @@ class ProfileViewModel @Inject constructor(
     private val _showImageSourceDialog = MutableStateFlow(false)
     val showImageSourceDialog: StateFlow<Boolean> = _showImageSourceDialog.asStateFlow()
 
+    private val _nameError = MutableStateFlow<String?>(null)
+    val nameError: StateFlow<String?> = _nameError.asStateFlow()
+
     val userPreferences: StateFlow<UserPreferences> = preferenceRepository.userPreferencesFlow
         .stateIn(
             scope = viewModelScope,
@@ -35,8 +38,17 @@ class ProfileViewModel @Inject constructor(
         )
 
     fun updateName(name: String) {
-        viewModelScope.launch {
-            preferenceRepository.updateName(name)
+        val error = when {
+            name.isBlank() -> "Name cannot be empty"
+            name.toByteArray(Charsets.UTF_8).size > 63 -> "Name is too long"
+            else -> null
+        }
+        _nameError.value = error
+
+        if (error == null) {
+            viewModelScope.launch {
+                preferenceRepository.updateName(name)
+            }
         }
     }
 

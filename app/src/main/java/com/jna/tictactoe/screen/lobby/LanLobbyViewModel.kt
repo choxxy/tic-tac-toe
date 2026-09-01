@@ -79,9 +79,19 @@ class LanLobbyViewModel @Inject constructor(
     }
 
     fun startHosting() {
+
+        val name = _uiState.value.playerName.trim()
+
+        if (name.isEmpty()) {
+            _uiState.update { it.
+            copy(error = "Please enter a player name before hosting.") }
+            return
+        }
+
         if (_uiState.value.isHosting) return
 
         stopDiscovery()
+
         _uiState.update { it.copy(isHosting = true, isWaitingForOpponent = true, error = null) }
         
         hostingJob = viewModelScope.launch {
